@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import * as TransactionController from '../controller/transaction.controller';
+import { handleFileUploads } from '../middleware/upload.middleware';
+
+const Transactionrouter = Router();
+
+Transactionrouter.post('/createTransactions',  handleFileUploads, TransactionController.createTransaction);
+Transactionrouter.get('/getTransactions', TransactionController.getAllTransactions);
+Transactionrouter.get('/getTransactions/:id', TransactionController.getTransactionById);
+Transactionrouter.put('/updateTransactions/:id', TransactionController.updateTransaction);
+Transactionrouter.delete('/deleteTransactions/:id', TransactionController.deleteTransaction);
+Transactionrouter.get('/transactions/membership-status', TransactionController.fetchMembershipStatus);
+
+export default Transactionrouter;
