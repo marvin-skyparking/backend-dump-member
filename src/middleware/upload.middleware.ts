@@ -2,12 +2,10 @@ import multer from 'multer';
 import path from 'path';
 import { Request, Response, NextFunction } from 'express';
 import { BadRequest } from '../utils/response/common.response';
-import { error } from 'console';
 
 // Storage configuration for files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Define destination based on the file field name
     if (file.fieldname === 'licensePlate') {
       cb(null, 'src/uploads/licensePlate/');
     } else if (file.fieldname === 'stnk') {
@@ -15,9 +13,7 @@ const storage = multer.diskStorage({
     } else if (file.fieldname === 'paymentFile') {
       cb(null, 'src/uploads/transfer/');
     } else {
-      return error('Invalid Field Name')
-      // Handle unknown fields
-      // cb(new Error('Invalid field name'), false);
+      cb(new Error('Invalid Field Name'), ''); // Correctly passing an Error object
     }
   },
   filename: (req, file, cb) => {
@@ -29,7 +25,7 @@ const storage = multer.diskStorage({
 // Define file filter to allow only specific file types
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   if (!file.originalname.match(/\.(jpg|jpeg|png|pdf)$/)) {
-    return error('File Only jpg, jpeg, png and pdf')
+    return cb(new Error); // Correctly passing an Error object
   }
   cb(null, true);
 };
