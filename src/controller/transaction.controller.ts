@@ -7,6 +7,7 @@ import { addMonths, startOfMonth, setDate } from 'date-fns';
 import { insertDumpData } from '../services/dumpData.service';
 import { getCodeProduct } from '../utils/helper.utils';
 import { encryptData } from '../utils/encrypt.utils';
+import { deleteFile } from '../utils/file.utils';
 
 
 // Define type for the file fields
@@ -159,16 +160,63 @@ export async function getTransactionById(req: Request, res: Response): Promise<R
 export async function updateTransaction(req: Request, res: Response): Promise<Response> {
     try {
         const id = parseInt(req.params.id, 10); // Convert ID to number
-        const [updatedCount, updatedRows] = await TransactionService.updateTransaction(id, req.body);
+
+        // Extract data from request body
+        const { fullname, phonenumber, membershipStatus, email, vehicletype, NoCard, PlateNumber, locationCode, isActive, createdBy, updatedBy, deletedOn, deletedBy, statusProgress } = req.body;
+
+        // Extract files from req.files
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+        // Fetch the existing transaction to get old file paths
+        const existingTransaction = await TransactionService.getTransactionById(id);
+        if (!existingTransaction) {
+            return NotFound(res, 'Transaction not found');
+        }
+
+          // Delete old files if they exist
+          if (existingTransaction.licensePlate) deleteFile(existingTransaction.licensePlate);
+          if (existingTransaction.stnk) deleteFile(existingTransaction.stnk);
+          if (existingTransaction.paymentFile) deleteFile(existingTransaction.paymentFile);
+  
+
+        // Get new file paths
+        const licensePlate = files['licensePlate'] ? files['licensePlate'][0].path : existingTransaction.licensePlate;
+        const stnk = files['stnk'] ? files['stnk'][0].path : existingTransaction.stnk;
+        const paymentFile = files['paymentFile'] ? files['paymentFile'][0].path : existingTransaction.paymentFile;
+
+        const updatedData = {
+            fullname,
+            phonenumber,
+            membershipStatus,
+            email,
+            vehicletype,
+            NoCard,
+            PlateNumber,
+            licensePlate,
+            stnk,
+            paymentFile,
+            locationCode,
+            isActive,
+            createdBy,
+            updatedBy,
+            deletedOn,
+            deletedBy,
+            statusProgress
+        };
+
+        // Update the transaction
+        const [updatedCount, updatedRows] = await TransactionService.updateTransaction(id, updatedData);
+
         if (updatedCount === 0) {
             return NotFound(res, 'Transaction not found');
         }
+
         return OK(res, 'Data Transaction Updated Successfully', updatedRows[0]);
     } catch (error: any) {
-      return ServerError(req, res, error?.message, error);
+        console.error('Error updating transaction:', error);
+        return ServerError(req, res, error?.message, error);
     }
 }
-
 // Delete a transaction by ID
 export async function deleteTransaction(req: Request, res: Response): Promise<Response> {
     try {
@@ -196,3 +244,27 @@ export async function fetchMembershipStatus(req: Request, res: Response): Promis
       return ServerError(req, res, error?.message, error);
     }
 }
+
+export async function getTransactionMetrics(req: Request, res: Response) {
+    try {
+      const [newMembersCount, takeCount, doneCount, progressCount,countAllTransactions, addDataLastMonthCount] = await Promise.all([
+        TransactionService.countNewMembers(),
+        TransactionService.countStatusProgressTake(),
+        TransactionService.countStatusProgressDone(),
+        TransactionService.countStatusProgressProgress(),
+        TransactionService.countAllTransactions(),
+        TransactionService.countStatusProgressAddDataLastMonth()
+      ]);
+  
+      res.status(200).json({
+        newMembersCount,
+        takeCount,
+        doneCount,
+        progressCount,
+        countAllTransactions,
+        addDataLastMonthCount
+      });
+    } catch (error:any) {
+      return ServerError(req, res, error?.message, error);
+    }
+  }

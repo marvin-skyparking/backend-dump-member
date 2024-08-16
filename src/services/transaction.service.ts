@@ -93,3 +93,95 @@ export async function fetchMembershipStatus(email: string, phoneNumber: string):
         throw new Error('Failed to fetch membership status');
     }
 }
+
+
+// Count the number of new members in the last month
+export async function countNewMembers(): Promise<number> {
+    try {
+        const count = await Transaction.count({
+            where: {
+                createdAt: {
+                    [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30)) // Last 30 days
+                }
+            }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting new members:', error);
+        throw new Error('Failed to count new members');
+    }
+}
+
+// Count transactions with statusProgress 'take'
+export async function countStatusProgressTake(): Promise<number> {
+    try {
+        const count = await Transaction.count({
+            where: {
+                statusProgress: 'take'
+            }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting statusProgress "take":', error);
+        throw new Error('Failed to count statusProgress "take"');
+    }
+}
+
+// Count transactions with statusProgress 'done'
+export async function countStatusProgressDone(): Promise<number> {
+    try {
+        const count = await Transaction.count({
+            where: {
+                statusProgress: 'done'
+            }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting statusProgress "done":', error);
+        throw new Error('Failed to count statusProgress "done"');
+    }
+}
+
+// Count transactions with statusProgress 'progress'
+export async function countStatusProgressProgress(): Promise<number> {
+    try {
+        const count = await Transaction.count({
+            where: {
+                statusProgress: 'progress'
+            }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting statusProgress "progress":', error);
+        throw new Error('Failed to count statusProgress "progress"');
+    }
+}
+
+// Count transactions with statusProgress 'add data' in the last month
+export async function countStatusProgressAddDataLastMonth(): Promise<number> {
+    try {
+        const count = await Transaction.count({
+            where: {
+                statusProgress: 'add data',
+                createdAt: {
+                    [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30)) // Last 30 days
+                }
+            }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting statusProgress "add data" in the last month:', error);
+        throw new Error('Failed to count statusProgress "add data" in the last month');
+    }
+}
+
+
+export async function countAllTransactions(): Promise<number> {
+    try {
+        const count = await Transaction.count();
+        return count;
+    } catch (error) {
+        console.error('Error counting all transactions:', error);
+        throw new Error('Failed to count all transactions');
+    }
+}

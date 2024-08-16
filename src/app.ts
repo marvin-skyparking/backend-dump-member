@@ -17,8 +17,16 @@ app.use(cookieParser());
 // Middleware for parsing JSON bodies in requests
 app.use(express.json());
 
+//Otigin
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://anotherdomain.com'], // Replace with your specific allowed origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true, // Enable this if you need to allow cookies or authentication headers
+};
+
 // Enable CORS with default settings (you can customize this based on your needs)
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Middleware for parsing application/x-www-form-urlencoded bodies
 app.use(bodyParser.json());
