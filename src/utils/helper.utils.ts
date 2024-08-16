@@ -76,3 +76,17 @@ export const getEndOfMonthString = (): string => {
 
 export const customLengthTrxId = generateRandomNumber(8);
 export const endMonth = getEndOfMonth();
+
+
+
+//Helper Data
+export function getCodeProduct(vehicletype: string): string {
+  switch (vehicletype) {
+      case 'MOTOR':
+          return 'CBY01';
+      case 'MOBIL':
+          return 'BBY01';
+      default:
+          throw new Error('Invalid vehicle type');
+  }
+}

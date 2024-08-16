@@ -11,6 +11,8 @@ const storage = multer.diskStorage({
       cb(null, 'src/uploads/licensePlate/');
     } else if (file.fieldname === 'stnk') {
       cb(null, 'src/uploads/stnk/');
+    } else if (file.fieldname === 'paymentFile') {
+      cb(null, 'src/uploads/transfer/');
     } else {
       // Handle unknown fields
       cb(new Error('Invalid field name'), false);
@@ -33,7 +35,8 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
 // Create the multer instance with the configuration
 const upload = multer({ storage, fileFilter }).fields([
   { name: 'licensePlate', maxCount: 1 },
-  { name: 'stnk', maxCount: 1 }
+  { name: 'stnk', maxCount: 1 },
+  { name: 'paymentFile', maxCount: 1 }  // Add paymentFile field
 ]);
 
 // Middleware function to handle file uploads

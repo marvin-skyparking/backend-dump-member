@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
 import * as TransactionService from '../services/transaction.service';
 import { IPaginatePayload } from '../interfaces/pagination.interface';
-import multer from 'multer';
-import path from 'path';
 import { BadRequest, NotFound, OK, ServerError } from '../utils/response/common.response';
-import { TransactionCreationAttributes } from '../model/dataTransaksi.model';
-
-
+import { dumpDataPayload } from '../model/dumpData.model';
+import { addMonths, startOfMonth, setDate } from 'date-fns';
+import { insertDumpData } from '../services/dumpData.service';
+import { getCodeProduct } from '../utils/helper.utils';
+import { encryptData } from '../utils/encrypt.utils';
 
 
 // Define type for the file fields
+
 export async function createTransaction(req: Request, res: Response): Promise<Response> {
     try {
         const {
@@ -21,17 +22,21 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             NoCard,
             PlateNumber,
             locationCode,
-            isActive, // Ensure this is included
+            isActive,
             createdBy,
             updatedBy,
             deletedOn,
             deletedBy,
-            statusProgress // Ensure this is included
+            statusProgress
         } = req.body;
+       
+        const encryptedPayload = encryptData(req.body);
+        
 
         // Initialize file variables
         let licensePlate: string | null = null;
         let stnk: string | null = null;
+        let paymentFile: string | null = null;
 
         // Check if req.files is defined and is an object
         if (req.files && typeof req.files === 'object') {
@@ -40,10 +45,24 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             // Extract file names if they exist
             licensePlate = files.licensePlate ? files.licensePlate[0]?.filename || null : null;
             stnk = files.stnk ? files.stnk[0]?.filename || null : null;
+            paymentFile = files.paymentFile ? files.paymentFile[0]?.filename || null : null;
+        }
+
+        // Validate required fields based on membershipStatus
+        if (membershipStatus === 'new') {
+            if (!stnk || !PlateNumber || !paymentFile) {
+                return BadRequest(res, 'Untuk Member Baru Silahkan Upload Foto STNK, PLAT NOMOR & Bukti Bayar.');
+            }
+        } else if (membershipStatus === 'extend') {
+            if (!paymentFile || !NoCard) {
+                return BadRequest(res, 'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar');
+            }
+        } else {
+            return BadRequest(res, 'Invalid membership status.');
         }
 
         // Prepare transaction data
-        const transactionData: TransactionCreationAttributes = {
+        const transactionData = {
             fullname,
             phonenumber,
             membershipStatus,
@@ -53,17 +72,42 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             PlateNumber,
             licensePlate,
             stnk,
+            paymentFile,
             locationCode,
-            isActive, // Ensure this is included
+            isActive,
             createdBy,
             updatedBy,
             deletedOn,
             deletedBy,
-            statusProgress // Ensure this is included
+            statusProgress
         };
 
-        // Create transaction
         const transaction = await TransactionService.createTransaction(transactionData);
+
+        // Calculate TGLAKHIR
+        const nextMonth = addMonths(new Date(), 1);
+        const TGLAKHIR = setDate(startOfMonth(nextMonth), 6);
+
+        const codeProduct = getCodeProduct(vehicletype);
+
+        // Prepare dumpData payload
+        const dumpMember: dumpDataPayload = {
+            nama: fullname,
+            noPolisi: PlateNumber,
+            idProdukPass: vehicletype,
+            TGL_AKHIR:TGLAKHIR,
+            idGrup: "UPH",
+            NoKartu: NoCard,
+            Payment:"BAYAR",
+            FAKTIF: 1,
+            FUPDATE: 1,
+            CodeProduct: codeProduct,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        // Insert dump data
+        const dumpMemberData = await insertDumpData(dumpMember);
 
         // Return success response
         return OK(res, 'Data Transaction Created Successfully', transaction);
@@ -72,7 +116,6 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
         return ServerError(req, res, error?.message || 'Failed to create transaction', error);
     }
 }
-
 
 // Get all transactions with pagination and search
 export async function getAllTransactions(req: Request, res: Response): Promise<Response> {

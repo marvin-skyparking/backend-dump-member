@@ -8,8 +8,8 @@ enum MembershipStatus {
 }
 
 enum VehicleType {
-    CAR = 'car',
-    MOTORCYCLE = 'motorcycle',
+    MOBIL = 'MOBIL',
+    MOTOR = 'MOTOR',
 }
 
 enum StatusProgress{
@@ -31,6 +31,7 @@ export interface TransactionAttributes {
     PlateNumber: string;
     licensePlate?: string | null;
     stnk?: string | null;
+    paymentFile?:string | null
     locationCode: string;
     isActive: boolean; // This field should be included
     createdBy?: string;
@@ -59,6 +60,7 @@ class Transaction extends Model<TransactionAttributes, TransactionCreationAttrib
     public PlateNumber!: string;
     public licensePlate?: string;
     public stnk?: string;
+    public paymentFile?: string;
     public locationCode!: string;
     public isActive!: boolean;
     public createdBy?: string;
@@ -115,11 +117,15 @@ Transaction.init({
     },
     licensePlate:{
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
     stnk:{
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+    },
+    paymentFile:{
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     locationCode:{
         type: DataTypes.STRING,
