@@ -6,14 +6,24 @@ import { dumpDataPayload } from '../model/dumpData.model';
 import { addMonths, startOfMonth, setDate } from 'date-fns';
 import { insertDumpData } from '../services/dumpData.service';
 import { getCodeProduct } from '../utils/helper.utils';
-import { encryptData } from '../utils/encrypt.utils';
+import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
 
 
 // Define type for the file fields
-
 export async function createTransaction(req: Request, res: Response): Promise<Response> {
     try {
+        // Extract encryptedPayload from request body
+        const encryptedPayload: string = req.body.encryptedPayload;
+
+        if (!encryptedPayload) {
+            return res.status(400).json({ status: false, message: 'Missing encryptedPayload in request body.' });
+        }
+
+        // Decrypt the payload
+        const decryptedPayload = decryptData(encryptedPayload);
+
+        // Parse the decrypted payload into JSON
         const {
             fullname,
             phonenumber,
@@ -29,11 +39,9 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             deletedOn,
             deletedBy,
             statusProgress
-        } = req.body;
-       
-        const encryptedPayload = encryptData(req.body);
-        
+        } = JSON.parse(decryptedPayload);
 
+        
         // Initialize file variables
         let licensePlate: string | null = null;
         let stnk: string | null = null;
@@ -83,35 +91,37 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             statusProgress
         };
 
+        // Create transaction
         const transaction = await TransactionService.createTransaction(transactionData);
 
         // Calculate TGLAKHIR
         const nextMonth = addMonths(new Date(), 1);
         const TGLAKHIR = setDate(startOfMonth(nextMonth), 6);
 
-        const codeProduct = getCodeProduct(vehicletype);
-
         // Prepare dumpData payload
-        const dumpMember: dumpDataPayload = {
+        const dumpMember = {
             nama: fullname,
             noPolisi: PlateNumber,
             idProdukPass: vehicletype,
-            TGL_AKHIR:TGLAKHIR,
+            TGL_AKHIR: TGLAKHIR,
             idGrup: "UPH",
             NoKartu: NoCard,
-            Payment:"BAYAR",
+            Payment: "BAYAR",
             FAKTIF: 1,
             FUPDATE: 1,
-            CodeProduct: codeProduct,
+            CodeProduct: getCodeProduct(vehicletype),
             createdAt: new Date(),
             updatedAt: new Date()
         };
 
         // Insert dump data
-        const dumpMemberData = await insertDumpData(dumpMember);
+        await insertDumpData(dumpMember);
 
-        // Return success response
-        return OK(res, 'Data Transaction Created Successfully', transaction);
+        // Encrypt response data
+        const encryptedResponse = encryptData(transaction);
+
+        // Return success response with encrypted data
+        return OK(res, 'Data Transaction Created Successfully', encryptedResponse);
     } catch (error: any) {
         // Return error response
         return ServerError(req, res, error?.message || 'Failed to create transaction', error);

@@ -2,7 +2,7 @@ import EnvConfig from '../config/envConfig';
 import CryptoJS from 'crypto-js';
 
 // Saltkey should be managed securely, e.g., using environment variables
-const Saltkey = process.env.ENCRYPTION_KEY || 'your-default-saltkey-here';
+const Saltkey = EnvConfig.ENCRYPTION_KEY || 'your-default-saltkey-here';
 
 // Function to encrypt data
 export function encryptData(rawData: object): string {
