@@ -14,9 +14,6 @@
     "seed": "sequelize-cli db:seed:all",
     "seed:undo": "sequelize-cli db:seed:undo"
   },
-  "engines": {
-    "node": "20.11"
-  },
   "dependencies": {
     "@sentry/node": "^8.26.0",
     "@types/node": "^22.3.0",
