@@ -2,12 +2,14 @@ import { Request, Response } from 'express';
 import * as TransactionService from '../services/transaction.service';
 import { IPaginatePayload } from '../interfaces/pagination.interface';
 import { BadRequest, NotFound, OK, ServerError } from '../utils/response/common.response';
-import { dumpDataPayload } from '../model/dumpData.model';
+import dumpDataMember from '../model/dumpData.model';
 import { addMonths, startOfMonth, setDate } from 'date-fns';
 import { insertDumpData } from '../services/dumpData.service';
 import { getCodeProduct } from '../utils/helper.utils';
 import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
+import MasterLocation from '../model/masterLocation.model';
+import ExcelJS from 'exceljs';
 
 
 // Define type for the file fields
@@ -17,7 +19,7 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
         const encryptedPayload: string = req.body.encryptedPayload;
 
         if (!encryptedPayload) {
-            return res.status(400).json({ status: false, message: 'Missing encryptedPayload in request body.' });
+            return BadRequest(res, 'Missing encryptedPayload in request body.')
         }
 
         // Decrypt the payload
@@ -41,7 +43,6 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             statusProgress
         } = JSON.parse(decryptedPayload);
 
-        
         // Initialize file variables
         let licensePlate: string | null = null;
         let stnk: string | null = null;
@@ -91,8 +92,33 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
             statusProgress
         };
 
+        // Check if there is enough quota available for the vehicle type
+        const location = await MasterLocation.findOne({ where: { locationCode } });
+
+        if (!location) {
+            return BadRequest(res, 'Location not found.');
+        }
+
+        const isQuotaSufficient = location.quotaMobil > 0 && vehicletype === 'MOBIL'
+            || location.quotaMotor > 0 && vehicletype === 'MOTOR';
+
+        if (!isQuotaSufficient) {
+            return BadRequest(res, 'Quota habis.');
+        }
+
         // Create transaction
         const transaction = await TransactionService.createTransaction(transactionData);
+
+        // Update quota remaining
+        if (vehicletype === 'MOBIL') {
+            location.cardMobilRemaining -= 1;
+            location.QuotaMobilRemaining = (location.QuotaMobilRemaining || 0) - 1;
+        } else if (vehicletype === 'MOTOR') {
+            location.cardMotorRemaining -= 1;
+            location.QuotaMotorRemaining = (location.QuotaMotorRemaining || 0) - 1;
+        }
+
+        await location.save();
 
         // Calculate TGLAKHIR
         const nextMonth = addMonths(new Date(), 1);
@@ -127,6 +153,8 @@ export async function createTransaction(req: Request, res: Response): Promise<Re
         return ServerError(req, res, error?.message || 'Failed to create transaction', error);
     }
 }
+
+
 
 // Get all transactions with pagination and search
 export async function getAllTransactions(req: Request, res: Response): Promise<Response> {
@@ -278,3 +306,60 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       return ServerError(req, res, error?.message, error);
     }
   }
+
+  export async function exportDumpDataMembersToExcel(req: Request, res: Response): Promise<any> {
+    try {
+        // Fetch dump data members from the database
+        const dumpDataMembers = await dumpDataMember.findAll();
+
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Dump Data Members');
+
+        // Define columns
+        worksheet.columns = [
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'Name', key: 'nama', width: 30 },
+            { header: 'Plate Number', key: 'noPolisi', width: 20 },
+            { header: 'Product ID', key: 'idProdukPass', width: 20 },
+            { header: 'Payment', key: 'Payment', width: 15 },
+            { header: 'Product Code', key: 'CodeProduct', width: 15 },
+            { header: 'End Date', key: 'TGL_AKHIR', width: 20 },
+            { header: 'Group ID', key: 'idGrup', width: 15 },
+            { header: 'Active', key: 'FAKTIF', width: 10 },
+            { header: 'Updated', key: 'FUPDATE', width: 10 },
+            { header: 'Card Number', key: 'NoKartu', width: 20 },
+            { header: 'Created At', key: 'createdAt', width: 20 },
+            { header: 'Updated At', key: 'updatedAt', width: 20 }
+        ];
+
+        // Add rows
+        dumpDataMembers.forEach(member => {
+            worksheet.addRow({
+                id: member.id,
+                nama: member.nama,
+                noPolisi: member.noPolisi,
+                idProdukPass: member.idProdukPass,
+                Payment: member.Payment,
+                CodeProduct: member.CodeProduct,
+                TGL_AKHIR: member.TGL_AKHIR,
+                idGrup: member.idGrup,
+                FAKTIF: member.FAKTIF,
+                FUPDATE: member.FUPDATE,
+                NoKartu: member.NoKartu,
+                createdAt: member.createdAt,
+                updatedAt: member.updatedAt
+            });
+        });
+
+        // Set response headers to indicate the file type
+        res.setHeader('Content-Disposition', 'attachment; filename=dumpDataMembers.xlsx');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        // Write to response
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error: any) {
+        return ServerError(req, res, error?.message, error);
+    }
+}

@@ -4,11 +4,9 @@
   "main": "dist/server.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "prepare": "husky install",
+    "build": "tsc && cp -r src/uploads dist/",
     "start": "yarn build && node dist/server.js",
-    "serve": "netlify dev",
-    "prod": "netlify deploy --prod",
-    "deploy": "vercel",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "migration:generate": "sequelize-cli migration:generate",
     "migrate": "sequelize-cli db:migrate",
@@ -16,6 +14,9 @@
     "migration:undo:all": "sequelize-cli db:migrate:undo:all",
     "seed": "sequelize-cli db:seed:all",
     "seed:undo": "sequelize-cli db:seed:undo"
+  },
+  "lint-staged": {
+  "*.ts": "eslint --fix"
   },
   "dependencies": {
     "@sentry/node": "^8.26.0",
@@ -27,6 +28,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "http-status-codes": "^2.3.0",
     "mariadb": "^3.3.1",
@@ -52,9 +54,11 @@
     "@types/multer": "^1.4.11",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.6",
+    "copyfiles": "^2.4.1",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.4",
     "jest": "^29.7.0",
     "nodemon": "^3.1.4",
     "sequelize-cli": "^6.6.2",

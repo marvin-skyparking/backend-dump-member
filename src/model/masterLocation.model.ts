@@ -12,6 +12,10 @@ export interface MasterLocationAttributes {
     cardMobilQuota: number;
     cardMotorQuota: number;
     virtualAccount: string;
+    QuotaMotorRemaining: number; // New field
+    QuotaMobilRemaining: number; // New field
+    cardMobilRemaining: number; // New field
+    cardMotorRemaining: number; // New field
     createdBy?: string;
     updatedBy?: string;
     deletedBy?: string;
@@ -20,7 +24,6 @@ export interface MasterLocationAttributes {
     DeleteOn?: Date;
     initialLocation: string;
 }
-
 // Define the creation attributes (optional fields)
 export interface MasterLocationCreationAttributes
     extends Optional<MasterLocationAttributes, 'id' | 'createdOn' | 'updatedOn' | 'DeleteOn'> {}
@@ -35,6 +38,10 @@ class MasterLocation extends Model<MasterLocationAttributes, MasterLocationCreat
     public quotaMotor!: number;
     public cardMobilQuota!: number;
     public cardMotorQuota!: number;
+    public QuotaMotorRemaining!: number; // New field
+    public QuotaMobilRemaining!: number; // New field
+    public cardMobilRemaining!: number; // New field
+    public cardMotorRemaining!: number; // New field
     public virtualAccount!: string;
     public createdBy?: string;
     public updatedBy?: string;
@@ -45,6 +52,7 @@ class MasterLocation extends Model<MasterLocationAttributes, MasterLocationCreat
     public initialLocation!: string;
 }
 
+
 // Initialize the MasterLocation model
 MasterLocation.init({
     id: {
@@ -54,7 +62,8 @@ MasterLocation.init({
     },
     locationCode: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true // Add unique constraint
     },
     locationName: {
         type: DataTypes.STRING,
@@ -75,6 +84,22 @@ MasterLocation.init({
     cardMotorQuota: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    QuotaMotorRemaining: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    QuotaMobilRemaining: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    cardMobilRemaining: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    cardMotorRemaining: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     virtualAccount: {
         type: DataTypes.STRING,
@@ -107,7 +132,8 @@ MasterLocation.init({
     },
     initialLocation: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true // Add unique constraint
     }
 }, {
     sequelize,

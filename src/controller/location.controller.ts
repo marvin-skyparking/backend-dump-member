@@ -67,6 +67,38 @@ export async function getAllMasterLocations(req: Request, res: Response): Promis
     }
 }
 
+
+
+export async function getAllCustomerLocations(req: Request, res: Response): Promise<Response> {
+    try {
+        // Extract pagination and search parameters from the query
+        const { page, limit, search } = req.query;
+
+        // Prepare the payload for the service
+        const payload: IPaginatePayload = {
+            page: page ? parseInt(page as string) : 1,
+            limit: limit ? parseInt(limit as string) : 10,
+            search: search as string || '',
+        };
+
+        // Fetch master locations with pagination and search
+        const { rows: masterLocations, count } = await MasterLocationService.getAllCustomerLocations(payload);
+
+        // Prepare the response data with pagination info
+        const responseData = {
+            totalItems: count,
+            totalPages: Math.ceil(count / (payload.limit ?? 10)),
+            currentPage: payload.page,
+            items: masterLocations,
+        };
+
+        return OK(res, 'Get Data Location Successfully', responseData);
+        
+    } catch (error: any) {
+        return ServerError(req, res, error?.message || 'Failed to fetch Location', error);
+    }
+}
+
 // Update an existing master location
 export async function updateMasterLocation(req: Request, res: Response): Promise<Response> {
     try {
