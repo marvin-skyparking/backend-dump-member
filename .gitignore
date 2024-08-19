@@ -13,3 +13,5 @@ paymentFile
 .png
 .jpeg
 .pdf
+# Local Netlify folder
+.netlify

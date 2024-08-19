@@ -1,4 +1,4 @@
-// src/index.ts
+// src/server.ts
 import app from './app';
 import 'reflect-metadata';
 import EnvConfig from './config/envConfig';
