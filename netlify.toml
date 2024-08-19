@@ -1,13 +1,9 @@
 [build]
-  command = "yarn build"
-  publish = "dist"
-
-[functions]
-  external_node_modules = ["express"]
-  node_bundler = "esbuild"
+  command = "yarn build" # Adjust if your build command is different
+  publish = "dist"       # Adjust this to your build output directory
+  functions = "functions" # Directory where Netlify functions are stored
 
 [[redirects]]
-  force = true
-  from = "/api/*"
+  from = "/*"
+  to = "/index.html"
   status = 200
-  to = "/.netlify/functions/api/:splat"
