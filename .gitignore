@@ -15,3 +15,5 @@ paymentFile
 .pdf
 # Local Netlify folder
 .netlify
+
+.vercel

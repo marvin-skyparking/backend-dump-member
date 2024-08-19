@@ -6,7 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
 import cors from 'cors';
 import 'reflect-metadata';
-
+import serverless from 'serverless-http';
 
 // Initialize express app and disable 'x-powered-by' header for security
 const app = express().disable('x-powered-by');

@@ -1,9 +1,0 @@
-[build]
-  command = "yarn build" # Adjust if your build command is different
-  publish = "dist"       # Adjust this to your build output directory
-  functions = "functions" # Directory where Netlify functions are stored
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
