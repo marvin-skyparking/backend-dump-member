@@ -16,9 +16,6 @@ COPY package*.json ./
 # Install application dependencies
 RUN yarn install
 
-# CI PIPELINE
-RUN yarn ci --only=production
-
 # Copy the rest of the application source code
 COPY . .
 
