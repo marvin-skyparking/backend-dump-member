@@ -4,19 +4,23 @@
   "main": "dist/server.js",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky install",
+    "test": "npx jest --passWithNoTests",
+    "lint": "npx eslint . --fix",
+    "lint:build": "npx eslint . --fix && yarn build ",
+    "prepare": "husky",
     "build": "tsc && cp -r src/uploads dist/",
     "start": "yarn build && node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "yarn prettier:format && ts-node-dev --respawn --transpile-only src/server.ts",
     "migration:generate": "sequelize-cli migration:generate",
     "migrate": "sequelize-cli db:migrate",
     "migration:undo": "sequelize-cli db:migrate:undo",
     "migration:undo:all": "sequelize-cli db:migrate:undo:all",
+    "prettier:format": "prettier --config .prettierrc src/**/*.ts --write",
     "seed": "sequelize-cli db:seed:all",
     "seed:undo": "sequelize-cli db:seed:undo"
   },
   "lint-staged": {
-  "*.ts": "eslint --fix"
+    "*.ts": "eslint --fix"
   },
   "dependencies": {
     "@sentry/node": "^8.26.0",
@@ -54,15 +58,22 @@
     "@types/multer": "^1.4.11",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.6",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
     "copyfiles": "^2.4.1",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.35.0",
+    "globals": "^15.9.0",
     "husky": "^9.1.4",
     "jest": "^29.7.0",
+    "lint-staged": "^15.2.9",
     "nodemon": "^3.1.4",
+    "prettier": "^3.3.3",
     "sequelize-cli": "^6.6.2",
     "supertest": "^7.0.0",
+    "ts-jest": "^29.2.4",
     "ts-node-dev": "^2.0.0",
     "vercel": "^36.0.0"
   }

@@ -22,7 +22,7 @@ const corsOptions = {
   origin: ['http://localhost:3000', 'http://anotherdomain.com'], // Replace with your specific allowed origins
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-  credentials: true, // Enable this if you need to allow cookies or authentication headers
+  credentials: true // Enable this if you need to allow cookies or authentication headers
 };
 
 // Enable CORS with default settings (you can customize this based on your needs)

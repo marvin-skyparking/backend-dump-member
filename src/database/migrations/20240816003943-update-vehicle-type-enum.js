@@ -5,7 +5,7 @@ module.exports = {
     // Step 1: Add the new ENUM type to the `vehicletype` column
     await queryInterface.changeColumn('transactions', 'vehicletype', {
       type: Sequelize.ENUM('MOTOR', 'MOBIL'),
-      allowNull: false,
+      allowNull: false
     });
   },
 
@@ -13,7 +13,7 @@ module.exports = {
     // Revert the ENUM changes to the previous state
     await queryInterface.changeColumn('transactions', 'vehicletype', {
       type: Sequelize.ENUM('MOTOR', 'MOBIL'),
-      allowNull: false,
+      allowNull: false
     });
   }
 };

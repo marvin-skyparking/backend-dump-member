@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import {
-    createMasterLocation,
-    getMasterLocationById,
-    getAllMasterLocations,
-    updateMasterLocation,
-    deleteMasterLocation,
-    getAllCustomerLocations
+  createMasterLocation,
+  getMasterLocationById,
+  getAllMasterLocations,
+  updateMasterLocation,
+  deleteMasterLocation,
+  getAllCustomerLocations
 } from '../controller/location.controller'; // Adjust the path as necessary
 
 const locationRoute = Router();

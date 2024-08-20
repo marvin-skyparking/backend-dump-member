@@ -6,13 +6,13 @@ import path from 'path';
  * @param filePath - The path to the file to be deleted.
  */
 export function deleteFile(filePath: string | null) {
-    if (filePath && fs.existsSync(filePath)) {
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error('Error deleting file:', err);
-            } else {
-                console.log('File deleted successfully:', filePath);
-            }
-        });
-    }
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error('Error deleting file:', err);
+      } else {
+        console.log('File deleted successfully:', filePath);
+      }
+    });
+  }
 }
