@@ -26,4 +26,4 @@ RUN yarn build
 EXPOSE 9000
 
 # Specify the command to run the application
-CMD ["node", "dist/server.js"]
+CMD ["yarn", "start"]
