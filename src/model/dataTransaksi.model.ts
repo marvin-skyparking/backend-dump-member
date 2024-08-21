@@ -4,7 +4,8 @@ import sequelize from '../config/database';
 // Define enums
 enum MembershipStatus {
   NEW = 'new',
-  EXTEND = 'extend'
+  EXTEND = 'extend',
+  ISMEMBER = 'ismember'
 }
 
 enum VehicleType {
@@ -13,6 +14,7 @@ enum VehicleType {
 }
 
 enum StatusProgress {
+  NEW = 'new',
   DONE = 'done',
   TAKE = 'take',
   PROGRESS = 'progress'
@@ -41,6 +43,7 @@ export interface TransactionAttributes {
   statusProgress: StatusProgress; // This field should be included
   createdAt?: Date;
   updatedAt?: Date;
+  isBayar?: Boolean;
 }
 
 // Define creation attributes interface
@@ -69,6 +72,8 @@ class Transaction
   public updatedBy?: string;
   public deletedOn?: Date;
   public deletedBy?: string;
+  public isBayar?: Boolean | undefined;
+
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -92,7 +97,7 @@ Transaction.init(
     statusProgress: {
       type: DataTypes.ENUM,
       values: Object.values(StatusProgress),
-      defaultValue: StatusProgress.PROGRESS,
+      defaultValue: StatusProgress.NEW,
       allowNull: false
     },
     membershipStatus: {
@@ -134,6 +139,11 @@ Transaction.init(
       allowNull: false
     },
     isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    },
+    isBayar: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false

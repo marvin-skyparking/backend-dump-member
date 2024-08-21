@@ -4,6 +4,7 @@ import Transaction, {
   TransactionCreationAttributes
 } from '../model/dataTransaksi.model';
 import { Op } from 'sequelize';
+import dumpDataMember from '../model/dumpData.model';
 
 // Create a new transaction
 export async function createTransaction(
@@ -81,6 +82,30 @@ export async function updateTransaction(
   }
 }
 
+export async function markTransactionAsPaid(
+  transactionId: number
+): Promise<[number, Transaction[]]> {
+  try {
+    const [affectedRows, updatedTransactions] = await Transaction.update(
+      { isBayar: true },
+      {
+        where: { id: transactionId },
+        returning: true
+      }
+    );
+
+    if (affectedRows === 0) {
+      throw new Error(`Transaction with ID ${transactionId} not found.`);
+    }
+
+    return [affectedRows, updatedTransactions];
+  } catch (error: any) {
+    throw new Error(
+      `Failed to update transaction payment status: ${error.message}`
+    );
+  }
+}
+
 // Delete a transaction by ID
 export async function deleteTransaction(id: number): Promise<number> {
   try {
@@ -116,9 +141,7 @@ export async function countNewMembers(): Promise<number> {
   try {
     const count = await Transaction.count({
       where: {
-        createdAt: {
-          [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 30)) // Last 30 days
-        }
+        membershipStatus: 'new'
       }
     });
     return count;
@@ -203,5 +226,70 @@ export async function countAllTransactions(): Promise<number> {
   } catch (error) {
     console.error('Error counting all transactions:', error);
     throw new Error('Failed to count all transactions');
+  }
+}
+
+export async function countExtendMember(): Promise<number> {
+  try {
+    const count = await Transaction.count({
+      where: {
+        membershipStatus: 'extend'
+      }
+    });
+    return count;
+  } catch (error) {
+    throw new Error('Failed to count statusProgress "progress"');
+  }
+}
+
+export async function findTransactionById(
+  transactionId: number
+): Promise<Transaction | null> {
+  try {
+    // Find the transaction by primary key
+    const transaction = await Transaction.findByPk(transactionId);
+
+    return transaction;
+  } catch (error) {
+    throw new Error('Failed to find transaction');
+  }
+}
+
+export async function updatePaymentStatusByFields(
+  noCard: string | null,
+  plateNumber: string | null
+): Promise<number> {
+  try {
+    // Create the where clause based on provided parameters
+    const whereClause: any = {};
+
+    if (noCard) {
+      whereClause[Op.or] = [{ NoKartu: noCard }];
+    }
+
+    if (plateNumber) {
+      if (!whereClause[Op.or]) {
+        whereClause[Op.or] = [];
+      }
+      whereClause[Op.or].push({ noPolisi: plateNumber });
+    }
+
+    // Check if whereClause has valid conditions
+    if (!whereClause[Op.or]) {
+      throw new Error('Neither noCard nor plateNumber provided.');
+    }
+
+    // Update the Payment field to 'BAYAR'
+    const [affectedRows] = await dumpDataMember.update(
+      { Payment: 'BAYAR' },
+      {
+        where: whereClause
+      }
+    );
+
+    return affectedRows;
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+    throw new Error('Failed to update payment status');
   }
 }

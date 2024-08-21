@@ -16,6 +16,7 @@ export interface dumpDataPayload {
   NoKartu?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  isExported?: Boolean;
 }
 
 // Define the creation attributes (optional fields)
@@ -39,6 +40,7 @@ class dumpDataMember
   public NoKartu?: string;
   public createdAt?: Date;
   public updatedAt?: Date;
+  public isExported?: Boolean;
 }
 
 // Initialize the model
@@ -88,6 +90,11 @@ dumpDataMember.init(
     NoKartu: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    isExported: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: false
     },
     createdAt: {
       type: DataTypes.DATE,

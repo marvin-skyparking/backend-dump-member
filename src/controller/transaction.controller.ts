@@ -1,4 +1,12 @@
 import { Request, Response } from 'express';
+import {
+  addMonths,
+  isAfter,
+  isBefore,
+  startOfMonth,
+  endOfMonth,
+  setDate
+} from 'date-fns';
 import * as TransactionService from '../services/transaction.service';
 import { IPaginatePayload } from '../interfaces/pagination.interface';
 import {
@@ -8,11 +16,11 @@ import {
   ServerError
 } from '../utils/response/common.response';
 import dumpDataMember from '../model/dumpData.model';
-import { addMonths, startOfMonth, setDate } from 'date-fns';
-import { insertDumpData } from '../services/dumpData.service';
+import { insertDumpData, markAsExported } from '../services/dumpData.service';
 import { getCodeProduct } from '../utils/helper.utils';
 import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
+import { markTransactionAsPaid } from '../services/transaction.service';
 import MasterLocation from '../model/masterLocation.model';
 import ExcelJS from 'exceljs';
 
@@ -22,6 +30,27 @@ export async function createTransaction(
   res: Response
 ): Promise<Response> {
   try {
+    // Get the current date
+    const currentDate = new Date();
+
+    // Start of the restriction period: 20th of the current month
+    const startRestriction = setDate(new Date(), 20);
+
+    // End of the restriction period: 5th of the next month
+    const nextMonth = addMonths(new Date(), 1);
+    const endRestriction = setDate(startOfMonth(nextMonth), 5);
+
+    // Check if the current date falls within the restricted period
+    if (
+      isBefore(currentDate, startRestriction) ||
+      isAfter(currentDate, endRestriction)
+    ) {
+      return BadRequest(
+        res,
+        'API access is only allowed between the 20th of this month and the 5th of the next month.'
+      );
+    }
+
     // Extract encryptedPayload from request body
     const encryptedPayload: string = req.body.encryptedPayload;
 
@@ -67,25 +96,6 @@ export async function createTransaction(
       paymentFile = files.paymentFile
         ? files.paymentFile[0]?.filename || null
         : null;
-    }
-
-    // Validate required fields based on membershipStatus
-    if (membershipStatus === 'new') {
-      if (!stnk || !PlateNumber || !paymentFile) {
-        return BadRequest(
-          res,
-          'Untuk Member Baru Silahkan Upload Foto STNK, PLAT NOMOR & Bukti Bayar.'
-        );
-      }
-    } else if (membershipStatus === 'extend') {
-      if (!paymentFile || !NoCard) {
-        return BadRequest(
-          res,
-          'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar'
-        );
-      }
-    } else {
-      return BadRequest(res, 'Invalid membership status.');
     }
 
     // Prepare transaction data
@@ -140,8 +150,8 @@ export async function createTransaction(
     await location.save();
 
     // Calculate TGLAKHIR
-    const nextMonth = addMonths(new Date(), 1);
-    const TGLAKHIR = setDate(startOfMonth(nextMonth), 6);
+    const nextMonthForTGLAKHIR = addMonths(new Date(), 1);
+    const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 6);
 
     // Prepare dumpData payload
     const dumpMember = {
@@ -151,7 +161,7 @@ export async function createTransaction(
       TGL_AKHIR: TGLAKHIR,
       idGrup: 'UPH',
       NoKartu: NoCard,
-      Payment: 'BAYAR',
+      Payment: 'BELUM BAYAR',
       FAKTIF: 1,
       FUPDATE: 1,
       CodeProduct: getCodeProduct(vehicletype),
@@ -160,8 +170,7 @@ export async function createTransaction(
     };
 
     // Insert dump data
-    await insertDumpData(dumpMember);
-
+    const dumpData = await insertDumpData(dumpMember);
     // Encrypt response data
     const encryptedResponse = encryptData(transaction);
 
@@ -177,7 +186,6 @@ export async function createTransaction(
     );
   }
 }
-
 // Get all transactions with pagination and search
 export async function getAllTransactions(
   req: Request,
@@ -202,6 +210,7 @@ export async function getAllTransactions(
     // Return response with transactions, totalCount, and currentPage
     return OK(res, 'Data Transactions Fetched Successfully', {
       transactions: rows,
+      totalPages: Math.ceil(count / (payload.limit ?? 10)),
       totalCount: count,
       currentPage
     });
@@ -314,6 +323,7 @@ export async function updateTransaction(
     return ServerError(req, res, error?.message, error);
   }
 }
+
 // Delete a transaction by ID
 export async function deleteTransaction(
   req: Request,
@@ -364,14 +374,16 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       doneCount,
       progressCount,
       countAllTransactions,
-      addDataLastMonthCount
+      addDataLastMonthCount,
+      countExtendMember
     ] = await Promise.all([
       TransactionService.countNewMembers(),
       TransactionService.countStatusProgressTake(),
       TransactionService.countStatusProgressDone(),
       TransactionService.countStatusProgressProgress(),
       TransactionService.countAllTransactions(),
-      TransactionService.countStatusProgressAddDataLastMonth()
+      TransactionService.countStatusProgressAddDataLastMonth(),
+      TransactionService.countExtendMember()
     ]);
 
     res.status(200).json({
@@ -380,7 +392,8 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       doneCount,
       progressCount,
       countAllTransactions,
-      addDataLastMonthCount
+      addDataLastMonthCount,
+      countExtendMember
     });
   } catch (error: any) {
     return ServerError(req, res, error?.message, error);
@@ -392,8 +405,17 @@ export async function exportDumpDataMembersToExcel(
   res: Response
 ): Promise<any> {
   try {
-    // Fetch dump data members from the database
-    const dumpDataMembers = await dumpDataMember.findAll();
+    // Fetch dump data members that have not been exported yet and have Payment as 'BELUM BAYAR'
+    const dumpDataMembers = await dumpDataMember.findAll({
+      where: {
+        isExported: false,
+        Payment: 'BAYAR' // Only fetch records where Payment is 'BAYAR'
+      }
+    });
+
+    if (dumpDataMembers.length === 0) {
+      return res.status(404).send('No data available for export.');
+    }
 
     // Create a new workbook and worksheet
     const workbook = new ExcelJS.Workbook();
@@ -417,6 +439,7 @@ export async function exportDumpDataMembersToExcel(
     ];
 
     // Add rows
+    const memberIds: number[] = [];
     dumpDataMembers.forEach((member) => {
       worksheet.addRow({
         id: member.id,
@@ -433,6 +456,9 @@ export async function exportDumpDataMembersToExcel(
         createdAt: member.createdAt,
         updatedAt: member.updatedAt
       });
+
+      // Collect member IDs to mark them as exported later
+      memberIds.push(member.id);
     });
 
     // Set response headers to indicate the file type
@@ -448,7 +474,59 @@ export async function exportDumpDataMembersToExcel(
     // Write to response
     await workbook.xlsx.write(res);
     res.end();
+
+    // Mark members as exported
+    await markAsExported(memberIds);
   } catch (error: any) {
     return ServerError(req, res, error?.message, error);
+  }
+}
+//Update Transaction
+export async function updateTransactionPaymentStatus(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const id = parseInt(req.params.id, 10);
+
+    // Validate that id is a number
+    if (!id || isNaN(Number(id))) {
+      return BadRequest(res, 'Invalid transaction ID.');
+    }
+
+    const records = await TransactionService.findTransactionById(Number(id));
+
+    // Check if records array is empty
+    if (!records) {
+      return res.status(404).json({ message: 'No records found.' });
+    }
+
+    const noCard = records.dataValues.NoCard;
+    const plateNumber = records.dataValues.PlateNumber;
+
+    // Call the service to mark the transaction as paid
+    const [affectedRows, updatedTransaction] = await markTransactionAsPaid(
+      Number(id)
+    );
+
+    const updateDump = await TransactionService.updatePaymentStatusByFields(
+      noCard,
+      plateNumber
+    );
+
+    // Check if the transaction was updated
+    if (affectedRows === 0) {
+      return BadRequest(res, `Transaction with ID ${id} not found.`);
+    }
+
+    // Return success response
+    return OK(res, 'Transaction marked as paid successfully.', updateDump);
+  } catch (error: any) {
+    // Return error response
+    return ServerError(
+      req,
+      error.message || 'Failed to update transaction payment status',
+      error
+    );
   }
 }

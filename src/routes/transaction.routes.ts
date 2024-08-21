@@ -31,6 +31,10 @@ Transactionrouter.get(
   TransactionController.fetchMembershipStatus
 );
 Transactionrouter.get('/metrics', TransactionController.getTransactionMetrics);
+Transactionrouter.put(
+  '/pay/:id',
+  TransactionController.updateTransactionPaymentStatus
+);
 Transactionrouter.get(
   '/export-dump-data',
   TransactionController.exportDumpDataMembersToExcel
