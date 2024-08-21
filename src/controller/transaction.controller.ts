@@ -490,25 +490,27 @@ export async function updateTransactionPaymentStatus(
     const id = parseInt(req.params.id, 10);
 
     // Validate that id is a number
-    if (!id || isNaN(Number(id))) {
+    if (isNaN(id)) {
       return BadRequest(res, 'Invalid transaction ID.');
     }
 
-    const records = await TransactionService.findTransactionById(Number(id));
+    // Fetch transaction details
+    const records = await TransactionService.findTransactionById(id);
 
-    // Check if records array is empty
+    // Check if records are found
     if (!records) {
       return res.status(404).json({ message: 'No records found.' });
     }
 
-    const noCard = records.dataValues.NoCard;
-    const plateNumber = records.dataValues.PlateNumber;
+    // Extract data from records
+    const noCard = records.NoCard; // Adjust if necessary
+    const plateNumber = records.PlateNumber; // Adjust if necessary
 
-    // Call the service to mark the transaction as paid
-    const [affectedRows, updatedTransaction] = await markTransactionAsPaid(
-      Number(id)
-    );
+    // Mark transaction as paid
+    const { affectedRows, updatedTransactions } =
+      await markTransactionAsPaid(id);
 
+    // Update payment status in dump data
     const updateDump = await TransactionService.updatePaymentStatusByFields(
       noCard,
       plateNumber

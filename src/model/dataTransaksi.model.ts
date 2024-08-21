@@ -2,7 +2,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database';
 
 // Define enums
-enum MembershipStatus {
+export enum MembershipStatus {
   NEW = 'new',
   EXTEND = 'extend',
   ISMEMBER = 'ismember'

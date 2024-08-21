@@ -1,5 +1,6 @@
 import { IPaginatePayload } from '../interfaces/pagination.interface';
 import Transaction, {
+  MembershipStatus,
   TransactionAttributes,
   TransactionCreationAttributes
 } from '../model/dataTransaksi.model';
@@ -84,10 +85,10 @@ export async function updateTransaction(
 
 export async function markTransactionAsPaid(
   transactionId: number
-): Promise<[number, Transaction[]]> {
+): Promise<{ affectedRows: number; updatedTransactions: Transaction[] }> {
   try {
     const [affectedRows, updatedTransactions] = await Transaction.update(
-      { isBayar: true },
+      { isBayar: true, membershipStatus: MembershipStatus.ISMEMBER },
       {
         where: { id: transactionId },
         returning: true
@@ -98,7 +99,7 @@ export async function markTransactionAsPaid(
       throw new Error(`Transaction with ID ${transactionId} not found.`);
     }
 
-    return [affectedRows, updatedTransactions];
+    return { affectedRows, updatedTransactions };
   } catch (error: any) {
     throw new Error(
       `Failed to update transaction payment status: ${error.message}`
