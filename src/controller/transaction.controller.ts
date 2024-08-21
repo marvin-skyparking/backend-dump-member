@@ -98,6 +98,24 @@ export async function createTransaction(
         : null;
     }
 
+    if (membershipStatus === 'new') {
+      if (!stnk || !PlateNumber || !paymentFile) {
+        return BadRequest(
+          res,
+          'Untuk Member Baru Silahkan Upload Foto STNK, PLAT NOMOR & Bukti Bayar.'
+        );
+      }
+    } else if (membershipStatus === 'extend') {
+      if (!paymentFile || !NoCard) {
+        return BadRequest(
+          res,
+          'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar'
+        );
+      }
+    } else {
+      return BadRequest(res, 'Invalid membership status.');
+    }
+
     // Prepare transaction data
     const transactionData = {
       fullname,
