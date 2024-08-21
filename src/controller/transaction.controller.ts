@@ -186,6 +186,7 @@ export async function createTransaction(
     );
   }
 }
+
 // Get all transactions with pagination and search
 export async function getAllTransactions(
   req: Request,
@@ -373,6 +374,7 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       takeCount,
       doneCount,
       progressCount,
+      countStatusMembership,
       countAllTransactions,
       addDataLastMonthCount,
       countExtendMember
@@ -381,6 +383,7 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       TransactionService.countStatusProgressTake(),
       TransactionService.countStatusProgressDone(),
       TransactionService.countStatusProgressProgress(),
+      TransactionService.countStatusMembership(),
       TransactionService.countAllTransactions(),
       TransactionService.countStatusProgressAddDataLastMonth(),
       TransactionService.countExtendMember()
@@ -390,6 +393,7 @@ export async function getTransactionMetrics(req: Request, res: Response) {
       newMembersCount,
       takeCount,
       doneCount,
+      countStatusMembership,
       progressCount,
       countAllTransactions,
       addDataLastMonthCount,

@@ -168,6 +168,21 @@ export async function countStatusProgressTake(): Promise<number> {
 }
 
 // Count transactions with statusProgress 'done'
+export async function countStatusMembership(): Promise<number> {
+  try {
+    const count = await Transaction.count({
+      where: {
+        membershipStatus: 'ismember'
+      }
+    });
+    return count;
+  } catch (error) {
+    console.error('Error counting statusProgress "take":', error);
+    throw new Error('Failed to count statusProgress "take"');
+  }
+}
+
+// Count transactions with statusProgress 'done'
 export async function countStatusProgressDone(): Promise<number> {
   try {
     const count = await Transaction.count({
