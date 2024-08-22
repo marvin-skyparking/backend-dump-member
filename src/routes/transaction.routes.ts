@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as TransactionController from '../controller/transaction.controller';
 import { handleFileUploads } from '../middleware/upload.middleware';
+import { upload } from '../middleware/excel.middleware';
 
 const Transactionrouter = Router();
 
@@ -38,6 +39,17 @@ Transactionrouter.put(
 Transactionrouter.get(
   '/export-dump-data',
   TransactionController.exportDumpDataMembersToExcel
+);
+
+Transactionrouter.post(
+  '/insertDataMutation',
+  upload.single('file'),
+  TransactionController.uploadExcelFile
+);
+
+Transactionrouter.get(
+  '/getDataMutation',
+  TransactionController.getMutationData
 );
 
 export default Transactionrouter;

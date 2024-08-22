@@ -8,7 +8,16 @@ const sequelize = new Sequelize(
   {
     host: '8.215.44.147',
     dialect: 'mariadb',
-    logging: false
+    logging: false,
+    dialectOptions: {
+      connectTimeout: 60000 // 60 seconds
+    },
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
   }
 );
 

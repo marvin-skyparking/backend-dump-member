@@ -23,6 +23,10 @@ import { deleteFile } from '../utils/file.utils';
 import { markTransactionAsPaid } from '../services/transaction.service';
 import MasterLocation from '../model/masterLocation.model';
 import ExcelJS from 'exceljs';
+import {
+  getPaginatedResults,
+  processAndInsertExcelData
+} from '../services/uploadData.service';
 
 // Define type for the file fields
 export async function createTransaction(
@@ -552,5 +556,55 @@ export async function updateTransactionPaymentStatus(
       error.message || 'Failed to update transaction payment status',
       error
     );
+  }
+}
+
+export const uploadExcelFile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No file uploaded' });
+      return;
+    }
+
+    // Process and insert data from the uploaded file's buffer
+    await processAndInsertExcelData(req.file.buffer);
+
+    // Respond with success
+    res
+      .status(200)
+      .json({ message: 'File processed and data inserted successfully' });
+  } catch (error: any) {
+    console.error('Error in uploadExcelFile controller:', error);
+    res.status(500).json({
+      message: 'Failed to process file and insert data',
+      error: error.message
+    });
+  }
+};
+
+export async function getMutationData(req: Request, res: Response) {
+  try {
+    const { page = 1, limit = 10, search = '' } = req.query;
+
+    const paginationPayload: IPaginatePayload = {
+      page: Number(page),
+      limit: Number(limit),
+      search: String(search)
+    };
+
+    // Use the service to get paginated results
+    const paginatedResults = await getPaginatedResults(
+      paginationPayload.page || 1,
+      paginationPayload.limit || 10,
+      paginationPayload.search || ''
+    );
+
+    res.status(200).json(paginatedResults);
+  } catch (error) {
+    console.error('Error fetching mutation data:', error);
+    res.status(500).json({ message: 'Failed to retrieve mutation data' });
   }
 }
