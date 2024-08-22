@@ -6,7 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
 import cors from 'cors';
 import 'reflect-metadata';
-import serverless from 'serverless-http';
+import path from 'path';
 
 // Initialize express app and disable 'x-powered-by' header for security
 const app = express().disable('x-powered-by');
@@ -31,6 +31,7 @@ app.use(cors(corsOptions));
 // Middleware for parsing application/x-www-form-urlencoded bodies
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Swagger setup for API documentation (enabled based on environment variable)
 const enableSwagger = process.env.ENABLE_SWAGGER === 'true';
