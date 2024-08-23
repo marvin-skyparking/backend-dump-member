@@ -32,14 +32,24 @@ export async function getAllTransactions(
     // Calculate offset for pagination
     const offset = (page - 1) * limit;
 
+    // Create an array of search conditions
+    const searchFields = [
+      'email',
+      'phonenumber',
+      'fullname',
+      'NoCard',
+      'PlateNumber',
+      'vehicletype',
+      'membershipStatus',
+      'statusProgress'
+    ];
+
     // Build search condition using LIKE instead of ILIKE
     const searchCondition = search
       ? {
-          [Op.or]: [
-            { email: { [Op.like]: `%${search}%` } },
-            { phonenumber: { [Op.like]: `%${search}%` } },
-            { fullname: { [Op.like]: `%${search}%` } }
-          ]
+          [Op.or]: searchFields.map((field) => ({
+            [field]: { [Op.like]: `%${search}%` }
+          }))
         }
       : {};
 
