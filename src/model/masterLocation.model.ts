@@ -1,6 +1,6 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
-import { Sequelize } from 'sequelize-typescript';
+import MasterLocationPrice from './masterLocationPrice.model';
 
 // Define the interface for the model attributes
 export interface MasterLocationAttributes {
@@ -11,11 +11,11 @@ export interface MasterLocationAttributes {
   quotaMotor: number;
   cardMobilQuota: number;
   cardMotorQuota: number;
-  virtualAccount: string;
   QuotaMotorRemaining: number; // New field
   QuotaMobilRemaining: number; // New field
   cardMobilRemaining: number; // New field
   cardMotorRemaining: number; // New field
+  virtualAccount: string;
   createdBy?: string;
   updatedBy?: string;
   deletedBy?: string;
@@ -24,6 +24,7 @@ export interface MasterLocationAttributes {
   DeleteOn?: Date;
   initialLocation: string;
 }
+
 // Define the creation attributes (optional fields)
 export interface MasterLocationCreationAttributes
   extends Optional<
@@ -55,98 +56,108 @@ class MasterLocation
   public updatedOn?: Date;
   public DeleteOn?: Date;
   public initialLocation!: string;
+
+  // Initialize the MasterLocation model
+  public static initModel() {
+    MasterLocation.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true
+        },
+        locationCode: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true // Add unique constraint
+        },
+        locationName: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        quotaMobil: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+        },
+        quotaMotor: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+        },
+        cardMobilQuota: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+        },
+        cardMotorQuota: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+        },
+        QuotaMotorRemaining: {
+          type: DataTypes.INTEGER,
+          allowNull: true
+        },
+        QuotaMobilRemaining: {
+          type: DataTypes.INTEGER,
+          allowNull: true
+        },
+        cardMobilRemaining: {
+          type: DataTypes.INTEGER,
+          allowNull: true
+        },
+        cardMotorRemaining: {
+          type: DataTypes.INTEGER,
+          allowNull: true
+        },
+        virtualAccount: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        createdBy: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        updatedBy: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        deletedBy: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        createdOn: {
+          type: DataTypes.DATE,
+          allowNull: true,
+          defaultValue: DataTypes.NOW
+        },
+        updatedOn: {
+          type: DataTypes.DATE,
+          allowNull: true
+        },
+        DeleteOn: {
+          type: DataTypes.DATE,
+          allowNull: true
+        },
+        initialLocation: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true // Add unique constraint
+        }
+      },
+      {
+        sequelize,
+        tableName: 'MasterLocations',
+        timestamps: false // Set to true if you use createdAt/updatedAt fields
+      }
+    );
+
+    // Set up associations here
+    MasterLocation.hasMany(MasterLocationPrice, {
+      foreignKey: 'locationId', // Ensure this matches the foreign key
+      sourceKey: 'id', // This should match the primary key of MasterLocation
+      as: 'prices'
+    });
+  }
 }
 
-// Initialize the MasterLocation model
-MasterLocation.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
-    },
-    locationCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true // Add unique constraint
-    },
-    locationName: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    quotaMobil: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    quotaMotor: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    cardMobilQuota: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    cardMotorQuota: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    QuotaMotorRemaining: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    QuotaMobilRemaining: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    cardMobilRemaining: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    cardMotorRemaining: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    virtualAccount: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    createdBy: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    updatedBy: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    deletedBy: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    createdOn: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: DataTypes.NOW
-    },
-    updatedOn: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    DeleteOn: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    initialLocation: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true // Add unique constraint
-    }
-  },
-  {
-    sequelize,
-    tableName: 'MasterLocations',
-    timestamps: false // Set to true if you use createdAt/updatedAt fields
-  }
-);
-
-// Export the model
+// Call the method to initialize the model
+MasterLocation.initModel();
 export default MasterLocation;

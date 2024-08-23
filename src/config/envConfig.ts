@@ -24,5 +24,9 @@ if (EnvConfig.NODE_ENV === 'development') {
   EnvConfig.JWT_SECRET = EnvConfig.JWT_SECRET ?? 'skyparking';
   EnvConfig.BAYARIND_DEV_URL =
     EnvConfig.BAYARIND_DEV_URL ?? 'https://snaptest.bayarind.id';
+  EnvConfig.WMS_F = EnvConfig.WMS_F ?? 1;
+  EnvConfig.MAX_F = EnvConfig.MAX_F ?? 5;
+  EnvConfig.WMS_S = EnvConfig.WMS_S ?? 1;
+  EnvConfig.MAX_S = EnvConfig.MAX_S ?? 5;
 }
 export default EnvConfig;

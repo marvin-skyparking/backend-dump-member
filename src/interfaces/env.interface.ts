@@ -11,4 +11,8 @@ export interface IEnvInterface {
   JWT_SECRET: string;
   BAYARIND_DEV_URL: string;
   ENCRYPTION_KEY: string;
+  WMS_F: number;
+  MAX_F: number;
+  WMS_S: number;
+  MAX_S: number;
 }

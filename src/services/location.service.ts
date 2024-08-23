@@ -4,6 +4,7 @@ import MasterLocation, {
   MasterLocationCreationAttributes
 } from '../model/masterLocation.model';
 import { Op } from 'sequelize';
+import MasterLocationPrice from '../model/masterLocationPrice.model';
 
 // Create a new master location
 export async function createMasterLocation(
@@ -41,6 +42,18 @@ export async function getMasterLocationById(
     return await MasterLocation.findByPk(id);
   } catch (error: any) {
     console.error('Error fetching master location by ID:', error);
+    throw new Error(error.message || 'Failed to fetch master location');
+  }
+}
+
+// Get a master location by locationCode
+export async function getMasterLocationByCode(
+  locationCode: string
+): Promise<MasterLocation | null> {
+  try {
+    return await MasterLocation.findOne({ where: { locationCode } });
+  } catch (error: any) {
+    console.error('Error fetching master location by code:', error);
     throw new Error(error.message || 'Failed to fetch master location');
   }
 }
@@ -105,11 +118,18 @@ export async function getAllCustomerLocations(
         }
       : { isActive: true }; // Default condition if no search term is provided
 
-    // Fetch master locations with pagination and search
+    // Fetch master locations with pagination, search, and associated prices
     const { count, rows } = await MasterLocation.findAndCountAll({
       where: searchCondition,
       limit,
-      offset
+      offset,
+      include: [
+        {
+          model: MasterLocationPrice,
+          as: 'prices', // Alias used in the association
+          required: false // Set to true if you want only locations with prices
+        }
+      ]
     });
 
     return { rows, count };
@@ -118,7 +138,6 @@ export async function getAllCustomerLocations(
     throw new Error(error.message || 'Failed to fetch master locations');
   }
 }
-
 // Update an existing master location
 export async function updateMasterLocation(
   id: number,
