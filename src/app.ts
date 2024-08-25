@@ -7,6 +7,7 @@ import swaggerSpec from './config/swagger';
 import cors from 'cors';
 import 'reflect-metadata';
 import path from 'path';
+import { limiterGlobal } from './middleware/rateLimit.middleware';
 
 // Initialize express app and disable 'x-powered-by' header for security
 const app = express().disable('x-powered-by');
@@ -19,7 +20,10 @@ app.use(express.json());
 
 //Otigin
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://anotherdomain.com'], // Replace with your specific allowed origins
+  origin: [
+    'http://localhost:3000',
+    'https://dev-injectmember.skyparking.online'
+  ], // Replace with your specific allowed origins
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   credentials: true // Enable this if you need to allow cookies or authentication headers
@@ -32,6 +36,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(limiterGlobal);
 
 // Swagger setup for API documentation (enabled based on environment variable)
 const enableSwagger = process.env.ENABLE_SWAGGER === 'true';

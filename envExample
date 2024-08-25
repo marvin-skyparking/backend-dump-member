@@ -11,3 +11,7 @@ JWT_SECRET = skybillingdb
 BAYARIND_DEV_URL = https://snaptest.bayarind.id
 
 20.11
+WMS_F = 1
+MAX_F = 10
+WMS_S = 1
+MAX_S = 60
