@@ -9,70 +9,70 @@ module.exports = {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       LocationCode: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       LocationName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       QuotaMobil: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       QuotaMotor: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       CardMobilQuota: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       CardMotorQuota: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       VirtualAccount: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       CreateBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       UpdatedBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       DeletedBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       CreatedOn: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.NOW
       },
       UpdateOn: {
         type: Sequelize.DATE,
-        allowNull: true,
+        allowNull: true
       },
       DeleteOn: {
         type: Sequelize.DATE,
-        allowNull: true,
+        allowNull: true
       },
       isActive: {
         type: Sequelize.BOOLEAN,
-        defaultValue:false,
-        allowNull: true,
+        defaultValue: false,
+        allowNull: true
       },
       InitialLocation: {
         type: Sequelize.STRING,
-        allowNull: true,
-      },
+        allowNull: true
+      }
     });
   },
 

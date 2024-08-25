@@ -4,3 +4,16 @@ node_modules
 dist
 .scannerwork
 bundle
+
+#FilesImages
+licensePlate
+stnk
+paymentFile
+.jpg
+.png
+.jpeg
+.pdf
+# Local Netlify folder
+.netlify
+
+.vercel

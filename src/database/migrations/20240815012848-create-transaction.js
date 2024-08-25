@@ -8,66 +8,66 @@ module.exports = {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       fullname: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       phonenumber: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       membershipStatus: {
         type: Sequelize.ENUM('new', 'extend'),
-        allowNull: false,
+        allowNull: false
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       vehicletype: {
         type: Sequelize.ENUM('car', 'motorcycle'),
-        allowNull: false,
+        allowNull: false
       },
       NoCard: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       PlateNumber: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       isActive: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: true,
+        defaultValue: true
       },
       createdBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       updatedBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       deletedOn: {
         type: Sequelize.DATE,
-        allowNull: true,
+        allowNull: true
       },
       deletedBy: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.NOW
       },
       updatedAt: {
         type: Sequelize.DATE,
-        allowNull: true,
-      },
+        allowNull: true
+      }
     });
   },
 

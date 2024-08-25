@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.addColumn('MasterLocations', 'updatedOn', {
       type: Sequelize.DATE,
       allowNull: true,
-      defaultValue: Sequelize.NOW,
+      defaultValue: Sequelize.NOW
     });
   },
 

@@ -6,18 +6,18 @@ module.exports = {
     // Add the new field 'paymentFile'
     await queryInterface.addColumn('transactions', 'paymentFile', {
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: true
     });
 
     // Modify 'licensePlate' and 'stnk' to be optional (allow NULL)
     await queryInterface.changeColumn('transactions', 'licensePlate', {
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: true
     });
 
     await queryInterface.changeColumn('transactions', 'stnk', {
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: true
     });
   },
 
@@ -28,12 +28,12 @@ module.exports = {
     // Revert 'licensePlate' and 'stnk' to not allow NULL if they were not nullable before
     await queryInterface.changeColumn('transactions', 'licensePlate', {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     });
 
     await queryInterface.changeColumn('transactions', 'stnk', {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: false
     });
   }
 };
