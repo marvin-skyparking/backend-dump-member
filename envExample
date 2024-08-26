@@ -9,7 +9,6 @@ SENTRY_URI =
 SENTRY_ENABLE =
 JWT_SECRET = skybillingdb
 BAYARIND_DEV_URL = https://snaptest.bayarind.id
-
 20.11
 WMS_F = 1
 MAX_F = 10

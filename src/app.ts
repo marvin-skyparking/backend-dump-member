@@ -17,6 +17,7 @@ app.use(cookieParser());
 
 // Middleware for parsing JSON bodies in requests
 app.use(express.json());
+app.set('trust proxy', 1);
 
 //Otigin
 const corsOptions = {
