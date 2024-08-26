@@ -6,6 +6,7 @@ import {
   updateLocationPrice,
   deleteLocationPrice
 } from '../services/priceLocation.service'; // Assuming the service is in the 'services' directory
+import { OK, ServerError } from '../utils/response/common.response';
 
 // Create a new location price
 export async function createLocationPriceController(
@@ -15,9 +16,15 @@ export async function createLocationPriceController(
   try {
     const data = req.body;
     const newLocationPrice = await createLocationPrice(data);
-    return res.status(201).json(newLocationPrice);
+
+    return OK(res, 'Update Data Location Successfully', newLocationPrice);
   } catch (error: any) {
-    return res.status(400).json({ error: error.message });
+    return ServerError(
+      req,
+      res,
+      error?.message || 'Failed to Create Location',
+      error
+    );
   }
 }
 
@@ -28,9 +35,14 @@ export async function getAllLocationPricesController(
 ) {
   try {
     const locationPrices = await getAllLocationPrices();
-    return res.status(200).json(locationPrices);
+    return OK(res, 'Update Data Location Successfully', locationPrices);
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return ServerError(
+      req,
+      res,
+      error?.message || 'Failed to Get Location',
+      error
+    );
   }
 }
 
