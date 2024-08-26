@@ -7,7 +7,6 @@ import swaggerSpec from './config/swagger';
 import cors from 'cors';
 import 'reflect-metadata';
 import path from 'path';
-import { limiterGlobal } from './middleware/rateLimit.middleware';
 
 // Initialize express app and disable 'x-powered-by' header for security
 const app = express().disable('x-powered-by');

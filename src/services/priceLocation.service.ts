@@ -27,12 +27,27 @@ export async function getAllLocationPrices() {
 }
 
 // Get a location price by locationId
-export async function getLocationPrice(locationId: number) {
-  const locationPrice = await MasterLocationPrice.findOne({
-    where: { locationId },
-    include: [{ model: MasterLocation, as: 'location' }] // Include associated location
-  });
-  return locationPrice;
+export async function getLocationPrice(locationCode: string) {
+  try {
+    const locationPrice = await MasterLocationPrice.findOne({
+      include: [
+        {
+          model: MasterLocation,
+          as: 'location', // This should match the alias in your association
+          where: { locationCode } // Filter by location code
+        }
+      ]
+    });
+
+    if (!locationPrice) {
+      throw new Error('Location price not found');
+    }
+
+    return locationPrice;
+  } catch (error) {
+    console.error('Error fetching location price:', error);
+    throw error; // Rethrow the error to handle it upstream if necessary
+  }
 }
 
 // Update a location price

@@ -26,11 +26,14 @@ export async function createMasterLocation(
     }
 
     // Create the new MasterLocation
-    const masterLocation = await MasterLocation.create(data);
-    return masterLocation;
-  } catch (error: any) {
+    return await MasterLocation.create(data);
+  } catch (error) {
     console.error('Error creating master location:', error);
-    throw new Error(error.message || 'Failed to create master location');
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to create master location'
+    );
   }
 }
 
@@ -40,9 +43,11 @@ export async function getMasterLocationById(
 ): Promise<MasterLocation | null> {
   try {
     return await MasterLocation.findByPk(id);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching master location by ID:', error);
-    throw new Error(error.message || 'Failed to fetch master location');
+    throw new Error(
+      error instanceof Error ? error.message : 'Failed to fetch master location'
+    );
   }
 }
 
@@ -52,9 +57,11 @@ export async function getMasterLocationByCode(
 ): Promise<MasterLocation | null> {
   try {
     return await MasterLocation.findOne({ where: { locationCode } });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching master location by code:', error);
-    throw new Error(error.message || 'Failed to fetch master location');
+    throw new Error(
+      error instanceof Error ? error.message : 'Failed to fetch master location'
+    );
   }
 }
 
@@ -87,12 +94,17 @@ export async function getAllMasterLocations(
     });
 
     return { rows, count };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching master locations:', error);
-    throw new Error(error.message || 'Failed to fetch master locations');
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch master locations'
+    );
   }
 }
 
+// Get all customer locations
 export async function getAllCustomerLocations(
   payload: IPaginatePayload = {}
 ): Promise<{ rows: MasterLocation[]; count: number }> {
@@ -133,11 +145,16 @@ export async function getAllCustomerLocations(
     });
 
     return { rows, count };
-  } catch (error: any) {
-    console.error('Error fetching master locations:', error);
-    throw new Error(error.message || 'Failed to fetch master locations');
+  } catch (error) {
+    console.error('Error fetching customer locations:', error);
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch customer locations'
+    );
   }
 }
+
 // Update an existing master location
 export async function updateMasterLocation(
   id: number,
@@ -150,9 +167,13 @@ export async function updateMasterLocation(
     }
     await masterLocation.update(data);
     return masterLocation;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating master location:', error);
-    throw new Error(error.message || 'Failed to update master location');
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to update master location'
+    );
   }
 }
 
@@ -164,8 +185,12 @@ export async function deleteMasterLocation(id: number): Promise<void> {
       throw new Error('Master Location not found');
     }
     await masterLocation.destroy();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting master location:', error);
-    throw new Error(error.message || 'Failed to delete master location');
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to delete master location'
+    );
   }
 }

@@ -53,5 +53,9 @@ Transactionrouter.get(
   '/getDataMutation',
   TransactionController.getMutationData
 );
+Transactionrouter.get(
+  '/findTransactionData',
+  TransactionController.getTransactionData
+);
 
 export default Transactionrouter;

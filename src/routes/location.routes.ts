@@ -5,7 +5,8 @@ import {
   getAllMasterLocations,
   updateMasterLocation,
   deleteMasterLocation,
-  getAllCustomerLocations
+  getAllCustomerLocations,
+  fetchMasterLocationByCode
 } from '../controller/location.controller'; // Adjust the path as necessary
 
 const locationRoute = Router();
@@ -15,6 +16,7 @@ locationRoute.post('/master-locations', createMasterLocation);
 
 // Route to get a master location by ID
 locationRoute.get('/master-locations/:id', getMasterLocationById);
+locationRoute.get('/locationData/', fetchMasterLocationByCode);
 
 // Route to get all master locations
 locationRoute.get('/allmaster-locations', getAllMasterLocations);

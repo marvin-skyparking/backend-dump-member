@@ -12,7 +12,7 @@ priceLocation.post(
 // Get all location prices
 priceLocation.get(
   '/location-prices',
-  locationPriceController.createLocationPriceController
+  locationPriceController.getAllLocationPricesController
 );
 
 // Get a location price by locationId (assuming this is the primary key)

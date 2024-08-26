@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as MasterLocationService from '../services/location.service'; // Adjust the path as necessary
-import {
+import MasterLocation, {
   MasterLocationAttributes,
   MasterLocationCreationAttributes
 } from '../model/masterLocation.model';
@@ -167,5 +167,34 @@ export async function deleteMasterLocation(
       error?.message || 'Failed to delete Location',
       error
     );
+  }
+}
+
+export async function fetchMasterLocationByCode(req: Request, res: Response) {
+  const locationCode = req.query.locationCode as string;
+
+  if (!locationCode) {
+    return res.status(400).json({ message: 'Location code is required' });
+  }
+
+  try {
+    const masterLocation: MasterLocation | null =
+      await MasterLocationService.getMasterLocationByCode(locationCode);
+
+    if (!masterLocation) {
+      return res.status(404).json({ message: 'Master location not found' });
+    }
+
+    return res.status(200).json(masterLocation);
+  } catch (error) {
+    console.error('Error in fetchMasterLocationByCode:', error);
+    return res
+      .status(500)
+      .json({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch master location'
+      });
   }
 }

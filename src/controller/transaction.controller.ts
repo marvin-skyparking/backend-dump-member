@@ -27,6 +27,8 @@ import {
   getPaginatedResults,
   processAndInsertExcelData
 } from '../services/uploadData.service';
+import { getMasterLocationByCode } from '../services/location.service';
+import Transaction from '../model/dataTransaksi.model';
 
 // Define type for the file fields
 export async function createTransaction(
@@ -34,17 +36,13 @@ export async function createTransaction(
   res: Response
 ): Promise<Response> {
   try {
-    // Get the current date
     const currentDate = new Date();
 
-    // Start of the restriction period: 20th of the current month
+    // Start and end of the restriction period
     const startRestriction = setDate(new Date(), 20);
-
-    // End of the restriction period: 5th of the next month
     const nextMonth = addMonths(new Date(), 1);
     const endRestriction = setDate(startOfMonth(nextMonth), 5);
 
-    // Check if the current date falls within the restricted period
     if (
       isBefore(currentDate, startRestriction) ||
       isAfter(currentDate, endRestriction)
@@ -55,17 +53,13 @@ export async function createTransaction(
       );
     }
 
-    // Extract encryptedPayload from request body
+    // Extract and decrypt payload
     const encryptedPayload: string = req.body.encryptedPayload;
-
     if (!encryptedPayload) {
       return BadRequest(res, 'Missing encryptedPayload in request body.');
     }
 
-    // Decrypt the payload
     const decryptedPayload = decryptData(encryptedPayload);
-
-    // Parse the decrypted payload into JSON
     const {
       fullname,
       phonenumber,
@@ -83,25 +77,19 @@ export async function createTransaction(
       statusProgress
     } = JSON.parse(decryptedPayload);
 
-    // Initialize file variables
+    // File handling
     let licensePlate: string | null = null;
     let stnk: string | null = null;
     let paymentFile: string | null = null;
 
-    // Check if req.files is defined and is an object
     if (req.files && typeof req.files === 'object') {
       const files = req.files as { [key: string]: Express.Multer.File[] };
-
-      // Extract file names if they exist
-      licensePlate = files.licensePlate
-        ? files.licensePlate[0]?.filename || null
-        : null;
-      stnk = files.stnk ? files.stnk[0]?.filename || null : null;
-      paymentFile = files.paymentFile
-        ? files.paymentFile[0]?.filename || null
-        : null;
+      licensePlate = files.licensePlate?.[0]?.filename || null;
+      stnk = files.stnk?.[0]?.filename || null;
+      paymentFile = files.paymentFile?.[0]?.filename || null;
     }
 
+    // Validation based on membership status
     if (membershipStatus === 'new') {
       if (!stnk || !PlateNumber || !paymentFile) {
         return BadRequest(
@@ -113,14 +101,14 @@ export async function createTransaction(
       if (!paymentFile || !NoCard) {
         return BadRequest(
           res,
-          'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar'
+          'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar.'
         );
       }
     } else {
       return BadRequest(res, 'Invalid membership status.');
     }
 
-    // Prepare transaction data
+    // Transaction data preparation
     const transactionData = {
       fullname,
       phonenumber,
@@ -141,9 +129,8 @@ export async function createTransaction(
       statusProgress
     };
 
-    // Check if there is enough quota available for the vehicle type
-    const location = await MasterLocation.findOne({ where: { locationCode } });
-
+    // Quota check
+    const location = await getMasterLocationByCode(locationCode);
     if (!location) {
       return BadRequest(res, 'Location not found.');
     }
@@ -156,26 +143,38 @@ export async function createTransaction(
       return BadRequest(res, 'Quota habis.');
     }
 
-    // Create transaction
-    const transaction =
-      await TransactionService.createTransaction(transactionData);
-
-    // Update quota remaining
-    if (vehicletype === 'MOBIL') {
-      location.cardMobilRemaining -= 1;
-      location.QuotaMobilRemaining = (location.QuotaMobilRemaining || 0) - 1;
-    } else if (vehicletype === 'MOTOR') {
-      location.cardMotorRemaining -= 1;
-      location.QuotaMotorRemaining = (location.QuotaMotorRemaining || 0) - 1;
+    let transaction;
+    if (membershipStatus === 'new') {
+      transaction = await TransactionService.createTransaction(transactionData);
+    } else if (membershipStatus === 'extend') {
+      transaction = await TransactionService.updateTransactionData(
+        NoCard,
+        transactionData
+      );
     }
 
+    // Ensure transaction is not undefined
+    if (!transaction) {
+      return ServerError(
+        req,
+        res,
+        'Transaction could not be created or updated.'
+      );
+    }
+
+    // Update location quota
+    if (vehicletype === 'MOBIL') {
+      location.quotaMobil -= 1;
+    } else if (vehicletype === 'MOTOR') {
+      location.quotaMotor -= 1;
+    }
     await location.save();
 
     // Calculate TGLAKHIR
     const nextMonthForTGLAKHIR = addMonths(new Date(), 1);
     const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 6);
 
-    // Prepare dumpData payload
+    // Insert dump data
     const dumpMember = {
       nama: fullname,
       noPolisi: PlateNumber,
@@ -190,16 +189,26 @@ export async function createTransaction(
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    await insertDumpData(dumpMember);
 
-    // Insert dump data
-    const dumpData = await insertDumpData(dumpMember);
-    // Encrypt response data
+    let transactionObject: Transaction;
+
+    if (Array.isArray(transaction)) {
+      // When transaction is an array, extract the first transaction from the array
+      transactionObject = transaction[1][0];
+    } else if (transaction) {
+      // When transaction is a single Transaction object
+      transactionObject = transaction;
+    } else {
+      return BadRequest(res, 'Failed to create or update transaction.');
+    }
+
+    // Encrypt and return response
     const encryptedResponse = encryptData(transaction);
 
-    // Return success response with encrypted data
     return OK(res, 'Data Transaction Created Successfully', encryptedResponse);
   } catch (error: any) {
-    // Return error response
+    console.error('Error in createTransaction:', error);
     return ServerError(
       req,
       res,
@@ -608,3 +617,25 @@ export async function getMutationData(req: Request, res: Response) {
     res.status(500).json({ message: 'Failed to retrieve mutation data' });
   }
 }
+
+export const getTransactionData = async (req: Request, res: Response) => {
+  const { NoCard, email } = req.body; // Assuming you're sending these in the request body
+
+  try {
+    // Call the service to find the transaction
+    const transaction = await TransactionService.findTransactionData(
+      NoCard,
+      email
+    );
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    // Return the found transaction
+    return res.status(200).json(transaction);
+  } catch (error) {
+    console.error('Error fetching transaction data:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

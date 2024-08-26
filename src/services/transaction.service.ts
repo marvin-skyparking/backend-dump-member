@@ -93,6 +93,20 @@ export async function updateTransaction(
   }
 }
 
+export async function updateTransactionData(
+  NoCard: string,
+  data: Partial<TransactionAttributes>
+): Promise<[number, Transaction[]]> {
+  try {
+    return await Transaction.update(data, {
+      where: { NoCard },
+      returning: true
+    });
+  } catch (error) {
+    throw new Error('Failed to update transaction');
+  }
+}
+
 export async function markTransactionAsPaid(
   transactionId: number
 ): Promise<{ affectedRows: number; updatedTransactions: Transaction[] }> {
@@ -317,5 +331,41 @@ export async function updatePaymentStatusByFields(
   } catch (error) {
     console.error('Error updating payment status:', error);
     throw new Error('Failed to update payment status');
+  }
+}
+
+export async function findTransactionData(
+  NoCard: string,
+  email: string
+): Promise<Transaction[] | null> {
+  try {
+    // Find the transaction by NoCard or email
+    const transaction = await Transaction.findAll({
+      where: {
+        [Op.or]: [
+          { NoCard }, // Match by NoCard
+          { email } // Match by email
+        ]
+      }
+    });
+
+    return transaction;
+  } catch (error) {
+    throw new Error('Failed to find transaction');
+  }
+}
+
+export async function findTransactionByPlate(
+  PlateNumber: string
+): Promise<Transaction | null> {
+  try {
+    // Find the transaction by PlateNumber
+    const transaction = await Transaction.findOne({
+      where: { PlateNumber } // Specify the condition for the query
+    });
+
+    return transaction;
+  } catch (error) {
+    throw new Error('Failed to find transaction');
   }
 }

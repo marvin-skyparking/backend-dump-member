@@ -49,8 +49,9 @@ export async function getAllLocationPricesController(
 // Get a location price by locationId
 export async function getLocationPriceController(req: Request, res: Response) {
   try {
-    const locationId = Number(req.params.locationId);
-    const locationPrice = await getLocationPrice(locationId);
+    const locationCode = req.params.locationCode;
+
+    const locationPrice = await getLocationPrice(locationCode);
     if (!locationPrice) {
       return res.status(404).json({ error: 'Location price not found.' });
     }

@@ -23,6 +23,42 @@ class MasterLocationPrice extends Model<
   public priceMotor!: number; // Price for motor vehicles
   public priceMobil!: number; // Price for mobil vehicles
 
+  // Initialize the MasterLocationPrice model
+  public static initModel() {
+    MasterLocationPrice.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true // Set id as the primary key
+        },
+        locationId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: MasterLocation, // Reference to the MasterLocation model
+            key: 'id' // Primary key in MasterLocation
+          }
+        },
+        priceMotor: {
+          type: DataTypes.DECIMAL(10, 2),
+          allowNull: false
+        },
+        priceMobil: {
+          type: DataTypes.DECIMAL(10, 2),
+          allowNull: false
+        }
+      },
+      {
+        tableName: 'MasterLocationPrices',
+        sequelize, // Pass the `sequelize` instance
+        timestamps: true, // Enable timestamps if needed
+        createdAt: 'createdAt', // Customize createdAt field
+        updatedAt: 'updatedAt' // Customize updatedAt field
+      }
+    );
+  }
+
   // Define the association here
   public static associate(models: any) {
     MasterLocationPrice.belongsTo(models.MasterLocation, {
@@ -32,38 +68,7 @@ class MasterLocationPrice extends Model<
   }
 }
 
-// Initialize the MasterLocationPrice model
-MasterLocationPrice.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true // Set id as the primary key
-    },
-    locationId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: MasterLocation, // Reference to the MasterLocation model
-        key: 'id' // Primary key in MasterLocation
-      }
-    },
-    priceMotor: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
-    },
-    priceMobil: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
-    }
-  },
-  {
-    tableName: 'MasterLocationPrices',
-    sequelize, // Pass the `sequelize` instance
-    timestamps: true, // Enable timestamps if needed
-    createdAt: 'createdAt', // Customize createdAt field
-    updatedAt: 'updatedAt' // Customize updatedAt field
-  }
-);
+// Call the initModel method
+MasterLocationPrice.initModel();
 
 export default MasterLocationPrice;
