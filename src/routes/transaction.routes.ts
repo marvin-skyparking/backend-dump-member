@@ -2,11 +2,13 @@ import { Router } from 'express';
 import * as TransactionController from '../controller/transaction.controller';
 import { handleFileUploads } from '../middleware/upload.middleware';
 import { upload } from '../middleware/excel.middleware';
+import { limiterSpecific } from '../middleware/rateLimit.middleware';
 
 const Transactionrouter = Router();
 
 Transactionrouter.post(
   '/createTransactions',
+  limiterSpecific,
   handleFileUploads,
   TransactionController.createTransaction
 );
