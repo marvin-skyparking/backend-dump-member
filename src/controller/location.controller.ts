@@ -4,7 +4,12 @@ import MasterLocation, {
   MasterLocationAttributes,
   MasterLocationCreationAttributes
 } from '../model/masterLocation.model';
-import { NotFound, OK, ServerError } from '../utils/response/common.response';
+import {
+  BadRequest,
+  NotFound,
+  OK,
+  ServerError
+} from '../utils/response/common.response';
 import { IPaginatePayload } from '../interfaces/pagination.interface';
 
 // Create a new master location
@@ -174,7 +179,7 @@ export async function fetchMasterLocationByCode(req: Request, res: Response) {
   const locationCode = req.query.locationCode as string;
 
   if (!locationCode) {
-    return res.status(400).json({ message: 'Location code is required' });
+    return BadRequest(res, 'Location code is required');
   }
 
   try {
@@ -182,19 +187,17 @@ export async function fetchMasterLocationByCode(req: Request, res: Response) {
       await MasterLocationService.getMasterLocationByCode(locationCode);
 
     if (!masterLocation) {
-      return res.status(404).json({ message: 'Master location not found' });
+      return BadRequest(res, 'Master Location Not Found');
     }
 
-    return res.status(200).json(masterLocation);
-  } catch (error) {
+    return OK(res, JSON.stringify(masterLocation));
+  } catch (error: any) {
     console.error('Error in fetchMasterLocationByCode:', error);
-    return res
-      .status(500)
-      .json({
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to fetch master location'
-      });
+    return ServerError(
+      req,
+      res,
+      error?.message || 'Failed to delete Location',
+      error
+    );
   }
 }

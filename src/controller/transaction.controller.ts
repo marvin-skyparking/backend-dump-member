@@ -449,7 +449,7 @@ export async function exportDumpDataMembersToExcel(
     });
 
     if (dumpDataMembers.length === 0) {
-      return res.status(404).send('No data available for export.');
+      return NotFound(res, 'No data available for export.');
     }
 
     // Create a new workbook and worksheet
@@ -534,7 +534,7 @@ export async function updateTransactionPaymentStatus(
 
     // Check if records are found
     if (!records) {
-      return res.status(404).json({ message: 'No records found.' });
+      return NotFound(res, 'No records found.');
     }
 
     // Extract data from records
@@ -571,26 +571,20 @@ export async function updateTransactionPaymentStatus(
 export const uploadExcelFile = async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   try {
     if (!req.file) {
-      res.status(400).json({ message: 'No file uploaded' });
-      return;
+      return BadRequest(res, 'No File Uploaded');
     }
 
     // Process and insert data from the uploaded file's buffer
     await processAndInsertExcelData(req.file.buffer);
 
     // Respond with success
-    res
-      .status(200)
-      .json({ message: 'File processed and data inserted successfully' });
+    return OK(res, 'File processed and data inserted successfully');
   } catch (error: any) {
-    console.error('Error in uploadExcelFile controller:', error);
-    res.status(500).json({
-      message: 'Failed to process file and insert data',
-      error: error.message
-    });
+    // Return error response
+    return ServerError(req, error.message || 'Failed to upload file', error);
   }
 };
 
@@ -604,6 +598,7 @@ export async function getMutationData(req: Request, res: Response) {
       search: String(search)
     };
 
+    const currentPage = paginationPayload.page;
     // Use the service to get paginated results
     const paginatedResults = await getPaginatedResults(
       paginationPayload.page || 1,
@@ -611,10 +606,14 @@ export async function getMutationData(req: Request, res: Response) {
       paginationPayload.search || ''
     );
 
-    res.status(200).json(paginatedResults);
-  } catch (error) {
-    console.error('Error fetching mutation data:', error);
-    res.status(500).json({ message: 'Failed to retrieve mutation data' });
+    const responsePayload = {
+      currentPage,
+      ...paginatedResults
+    };
+
+    return OK(res, 'Data Transaction Updated Successfully', responsePayload);
+  } catch (error: any) {
+    return ServerError(req, res, error?.message, error);
   }
 }
 
@@ -629,13 +628,12 @@ export const getTransactionData = async (req: Request, res: Response) => {
     );
 
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return NotFound(res, 'Transaction not found');
     }
 
     // Return the found transaction
-    return res.status(200).json(transaction);
-  } catch (error) {
-    console.error('Error fetching transaction data:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return OK(res, 'Data Transaction Updated Successfully', transaction);
+  } catch (error: any) {
+    return ServerError(req, res, error?.message, error);
   }
 };
