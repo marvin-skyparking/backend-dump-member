@@ -21,7 +21,6 @@ enum StatusProgress {
 }
 
 // Define attributes interface
-
 export interface TransactionAttributes {
   id: number;
   fullname: string;
@@ -35,12 +34,13 @@ export interface TransactionAttributes {
   stnk?: string | null;
   paymentFile?: string | null;
   locationCode: string;
-  isActive: boolean; // This field should be included
+  NoRef?: string | null;
+  isActive: boolean;
   createdBy?: string;
-  updatedBy?: string;
+  approvedBy?: string;
   deletedOn?: Date;
   deletedBy?: string;
-  statusProgress: StatusProgress; // This field should be included
+  statusProgress: StatusProgress;
   createdAt?: Date;
   updatedAt?: Date;
   isBayar?: Boolean;
@@ -67,9 +67,10 @@ class Transaction
   public stnk?: string;
   public paymentFile?: string;
   public locationCode!: string;
+  public NoRef?: string | null; // Optional NoRef field
   public isActive!: boolean;
   public createdBy?: string;
-  public updatedBy?: string;
+  public approvedBy?: string;
   public deletedOn?: Date;
   public deletedBy?: string;
   public isBayar?: Boolean | undefined;
@@ -138,6 +139,10 @@ Transaction.init(
       type: DataTypes.STRING,
       allowNull: false
     },
+    NoRef: {
+      type: DataTypes.STRING,
+      allowNull: true // NoRef is optional
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
@@ -152,7 +157,7 @@ Transaction.init(
       type: DataTypes.STRING,
       allowNull: true
     },
-    updatedBy: {
+    approvedBy: {
       type: DataTypes.STRING,
       allowNull: true
     },

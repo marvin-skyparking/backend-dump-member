@@ -321,7 +321,9 @@ export async function updatePaymentStatusByFields(
 
     // Update the Payment field to 'BAYAR'
     const [affectedRows] = await dumpDataMember.update(
-      { Payment: 'BAYAR' },
+      {
+        Payment: 'BAYAR'
+      },
       {
         where: whereClause
       }
@@ -366,5 +368,19 @@ export async function findTransactionByPlate(
     return transaction;
   } catch (error) {
     throw new Error('Failed to find transaction');
+  }
+}
+
+export async function updateProgress(
+  id: number,
+  data: Partial<TransactionAttributes>
+): Promise<[number, Transaction[]]> {
+  try {
+    return await Transaction.update(data, {
+      where: { id },
+      returning: true
+    });
+  } catch (error) {
+    throw new Error('Failed to update transaction');
   }
 }

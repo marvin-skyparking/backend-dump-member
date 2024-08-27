@@ -17,7 +17,7 @@ import {
 } from '../utils/response/common.response';
 import dumpDataMember from '../model/dumpData.model';
 import { insertDumpData, markAsExported } from '../services/dumpData.service';
-import { getCodeProduct } from '../utils/helper.utils';
+import { generateRandomNoRef, getCodeProduct } from '../utils/helper.utils';
 import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
 import { markTransactionAsPaid } from '../services/transaction.service';
@@ -108,6 +108,8 @@ export async function createTransaction(
       return BadRequest(res, 'Invalid membership status.');
     }
 
+    const NoRef = generateRandomNoRef();
+
     // Transaction data preparation
     const transactionData = {
       fullname,
@@ -121,6 +123,7 @@ export async function createTransaction(
       stnk,
       paymentFile,
       locationCode,
+      NoRef, // Add NoRef here
       isActive,
       createdBy,
       updatedBy,
@@ -147,9 +150,14 @@ export async function createTransaction(
     if (membershipStatus === 'new') {
       transaction = await TransactionService.createTransaction(transactionData);
     } else if (membershipStatus === 'extend') {
+      const updatedTransactionData = {
+        ...transactionData, // Spread existing properties
+        isBayar: false // Set isBayar to false
+      };
+
       transaction = await TransactionService.updateTransactionData(
         NoCard,
-        transactionData
+        updatedTransactionData
       );
     }
 
@@ -540,6 +548,9 @@ export async function updateTransactionPaymentStatus(
     // Extract data from records
     const noCard = records.NoCard; // Adjust if necessary
     const plateNumber = records.PlateNumber; // Adjust if necessary
+
+    // Extract ApprovedBy from request body
+    const { ApprovedBy } = req.body; // Assuming ApprovedBy is sent in the request body
 
     // Mark transaction as paid
     const { affectedRows, updatedTransactions } =

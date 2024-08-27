@@ -86,3 +86,26 @@ export function getCodeProduct(vehicletype: string): string {
       throw new Error('Invalid vehicle type');
   }
 }
+
+const existingRefs = new Set<string>(); // To store existing references for uniqueness
+
+export function generateRandomNoRef(): string {
+  let noRef: string;
+
+  do {
+    // Generate a random uppercase letter (A-Z)
+    const randomLetter = String.fromCharCode(
+      65 + Math.floor(Math.random() * 26)
+    ); // 65 is ASCII for 'A'
+    // Generate two random digits (00-99)
+    const randomDigits = Math.floor(Math.random() * 100)
+      .toString()
+      .padStart(3, '0'); // Pad with leading zeros
+
+    // Combine to form the NoRef
+    noRef = `${randomLetter}${randomDigits}`;
+  } while (existingRefs.has(noRef)); // Ensure it's unique
+
+  existingRefs.add(noRef); // Store the newly generated NoRef
+  return noRef;
+}
