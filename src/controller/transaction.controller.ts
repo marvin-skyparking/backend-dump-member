@@ -618,21 +618,19 @@ export async function getMutationData(req: Request, res: Response) {
 }
 
 export const getTransactionData = async (req: Request, res: Response) => {
-  const { NoCard, email } = req.body; // Assuming you're sending these in the request body
+  const { NoCardOrEmail } = req.body; // Assuming you're sending these in the request body
 
   try {
     // Call the service to find the transaction
-    const transaction = await TransactionService.findTransactionData(
-      NoCard,
-      email
-    );
+    const transaction =
+      await TransactionService.findTransactionData(NoCardOrEmail);
 
     if (!transaction) {
       return NotFound(res, 'Transaction not found');
     }
 
     // Return the found transaction
-    return OK(res, 'Data Transaction Updated Successfully', transaction);
+    return OK(res, 'Get Data Transaction Successfully', transaction);
   } catch (error: any) {
     return ServerError(req, res, error?.message, error);
   }

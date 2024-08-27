@@ -335,16 +335,15 @@ export async function updatePaymentStatusByFields(
 }
 
 export async function findTransactionData(
-  NoCard: string,
-  email: string
+  NoCardOrEmail: string
 ): Promise<Transaction[] | null> {
   try {
-    // Find the transaction by NoCard or email
+    // Find the transaction by NoCard or email, matching the provided value exactly
     const transaction = await Transaction.findAll({
       where: {
         [Op.or]: [
-          { NoCard }, // Match by NoCard
-          { email } // Match by email
+          { NoCard: NoCardOrEmail }, // Match by NoCard
+          { email: NoCardOrEmail } // Match by email
         ]
       }
     });
