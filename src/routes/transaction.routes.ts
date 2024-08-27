@@ -53,7 +53,7 @@ Transactionrouter.get(
   '/getDataMutation',
   TransactionController.getMutationData
 );
-Transactionrouter.get(
+Transactionrouter.post(
   '/findTransactionData',
   TransactionController.getTransactionData
 );
