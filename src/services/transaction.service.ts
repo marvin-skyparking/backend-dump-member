@@ -7,6 +7,7 @@ import Transaction, {
 } from '../model/dataTransaksi.model';
 import { Op } from 'sequelize';
 import dumpDataMember from '../model/dumpData.model';
+import sequelize from '../config/database';
 
 // Create a new transaction
 export async function createTransaction(
@@ -59,7 +60,16 @@ export async function getAllTransactions(
       where: searchCondition,
       limit,
       offset,
-      order: [['createdAt', 'DESC']]
+      order: [
+        [
+          sequelize.fn(
+            'GREATEST',
+            sequelize.col('createdAt'),
+            sequelize.col('updatedAt')
+          ),
+          'DESC'
+        ]
+      ]
     });
 
     return { rows, count };
