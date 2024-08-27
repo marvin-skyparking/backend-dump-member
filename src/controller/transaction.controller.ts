@@ -9,6 +9,7 @@ import {
 } from 'date-fns';
 import * as TransactionService from '../services/transaction.service';
 import { IPaginatePayload } from '../interfaces/pagination.interface';
+import axios from 'axios';
 import {
   BadRequest,
   NotFound,
@@ -28,7 +29,11 @@ import {
   processAndInsertExcelData
 } from '../services/uploadData.service';
 import { getMasterLocationByCode } from '../services/location.service';
-import Transaction from '../model/dataTransaksi.model';
+import Transaction, {
+  StatusProgress,
+  TransactionAttributes
+} from '../model/dataTransaksi.model';
+import EnvConfig from '../config/envConfig';
 
 // Define type for the file fields
 export async function createTransaction(
@@ -551,10 +556,11 @@ export async function updateTransactionPaymentStatus(
 
     // Extract ApprovedBy from request body
     const { ApprovedBy } = req.body; // Assuming ApprovedBy is sent in the request body
-
     // Mark transaction as paid
-    const { affectedRows, updatedTransactions } =
-      await markTransactionAsPaid(id);
+    const { affectedRows, updatedTransactions } = await markTransactionAsPaid(
+      id,
+      ApprovedBy
+    );
 
     // Update payment status in dump data
     const updateDump = await TransactionService.updatePaymentStatusByFields(
@@ -646,3 +652,71 @@ export const getTransactionData = async (req: Request, res: Response) => {
     return ServerError(req, res, error?.message, error);
   }
 };
+
+const allowedTransitions: { [key in StatusProgress]: StatusProgress[] } = {
+  [StatusProgress.NEW]: [StatusProgress.PROGRESS],
+  [StatusProgress.PROGRESS]: [StatusProgress.DONE, StatusProgress.TAKE],
+  [StatusProgress.DONE]: [], // Cannot go back to TAKE
+  [StatusProgress.TAKE]: [StatusProgress.DONE, StatusProgress.PROGRESS]
+};
+
+export async function handleUpdateStatus(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!status || !Object.values(StatusProgress).includes(status)) {
+    return res.status(400).json({ message: 'Invalid status provided' });
+  }
+
+  try {
+    const currentTransaction = await Transaction.findByPk(id);
+
+    if (!currentTransaction) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    const currentStatus = currentTransaction.statusProgress;
+    if (!allowedTransitions[currentStatus].includes(status as StatusProgress)) {
+      return res.status(400).json({
+        message: `Invalid transition from ${currentStatus} to ${status}`
+      });
+    }
+
+    const updatedTransaction = await TransactionService.updateStatusProgress(
+      Number(id),
+      status as StatusProgress
+    );
+
+    if (status === 'take') {
+      const fullname = updatedTransaction?.fullname;
+      const phoneNumber = updatedTransaction?.phonenumber;
+      const noRef = updatedTransaction?.NoRef;
+
+      const fonteAPI =
+        EnvConfig.FONTE_ENDPOINT +
+        '?token=' +
+        EnvConfig.FONTE_TOKEN +
+        '&target=' +
+        phoneNumber +
+        '&message=' +
+        `Hi ${fullname}, Silahkan Ambil Kartu dengan Antrian ${noRef}`;
+
+      try {
+        const response = await axios.get(fonteAPI);
+        console.log('API response:', response.data);
+      } catch (apiError) {
+        console.error('Error calling Fonte API:', apiError);
+      }
+    }
+
+    return res.status(200).json(updatedTransaction);
+  } catch (error) {
+    console.error('Error updating transaction status:', error);
+    return res
+      .status(500)
+      .json({ message: 'Failed to update transaction status' });
+  }
+}

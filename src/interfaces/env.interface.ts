@@ -15,4 +15,6 @@ export interface IEnvInterface {
   MAX_F: number;
   WMS_S: number;
   MAX_S: number;
+  FONTE_TOKEN: string;
+  FONTE_ENDPOINT: string;
 }

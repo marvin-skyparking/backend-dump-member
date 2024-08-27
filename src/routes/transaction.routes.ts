@@ -38,6 +38,10 @@ Transactionrouter.put(
   '/pay/:id',
   TransactionController.updateTransactionPaymentStatus
 );
+Transactionrouter.put(
+  '/updateStage/:id',
+  TransactionController.handleUpdateStatus
+);
 Transactionrouter.get(
   '/export-dump-data',
   TransactionController.exportDumpDataMembersToExcel

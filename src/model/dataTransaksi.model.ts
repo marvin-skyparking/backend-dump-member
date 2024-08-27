@@ -8,12 +8,12 @@ export enum MembershipStatus {
   ISMEMBER = 'ismember'
 }
 
-enum VehicleType {
+export enum VehicleType {
   MOBIL = 'MOBIL',
   MOTOR = 'MOTOR'
 }
 
-enum StatusProgress {
+export enum StatusProgress {
   NEW = 'new',
   DONE = 'done',
   TAKE = 'take',

@@ -28,5 +28,8 @@ if (EnvConfig.NODE_ENV === 'development') {
   EnvConfig.MAX_F = EnvConfig.MAX_F ?? 5;
   EnvConfig.WMS_S = EnvConfig.WMS_S ?? 1;
   EnvConfig.MAX_S = EnvConfig.MAX_S ?? 5;
+  EnvConfig.FONTE_ENDPOINT =
+    EnvConfig.FONTE_ENDPOINT ?? 'https://api.fonnte.com/send';
+  EnvConfig.FONTE_TOKEN = EnvConfig.FONTE_TOKEN ?? 'sjSmff-TSN6KvB8znGHf';
 }
 export default EnvConfig;

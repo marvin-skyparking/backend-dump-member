@@ -1,6 +1,7 @@
 import { IPaginatePayload } from '../interfaces/pagination.interface';
 import Transaction, {
   MembershipStatus,
+  StatusProgress,
   TransactionAttributes,
   TransactionCreationAttributes
 } from '../model/dataTransaksi.model';
@@ -108,11 +109,16 @@ export async function updateTransactionData(
 }
 
 export async function markTransactionAsPaid(
-  transactionId: number
+  transactionId: number,
+  ApprovedBy: string
 ): Promise<{ affectedRows: number; updatedTransactions: Transaction[] }> {
   try {
     const [affectedRows, updatedTransactions] = await Transaction.update(
-      { isBayar: true, membershipStatus: MembershipStatus.ISMEMBER },
+      {
+        isBayar: true,
+        membershipStatus: MembershipStatus.ISMEMBER,
+        approvedBy: ApprovedBy
+      },
       {
         where: { id: transactionId },
         returning: true
@@ -371,16 +377,26 @@ export async function findTransactionByPlate(
   }
 }
 
-export async function updateProgress(
+export async function updateStatusProgress(
   id: number,
-  data: Partial<TransactionAttributes>
-): Promise<[number, Transaction[]]> {
+  status: StatusProgress
+): Promise<Transaction | null> {
   try {
-    return await Transaction.update(data, {
-      where: { id },
-      returning: true
-    });
+    // Find the transaction by ID
+    const transaction = await Transaction.findByPk(id);
+
+    // If the transaction doesn't exist, return null or handle as needed
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    // Update the statusProgress
+    transaction.statusProgress = status;
+    await transaction.save(); // Save the updated transaction
+
+    return transaction; // Return the updated transaction
   } catch (error) {
-    throw new Error('Failed to update transaction');
+    console.error('Error updating statusProgress:', error);
+    throw new Error('Failed to update statusProgress');
   }
 }
