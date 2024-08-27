@@ -58,7 +58,8 @@ export async function getAllTransactions(
     const { count, rows } = await Transaction.findAndCountAll({
       where: searchCondition,
       limit,
-      offset
+      offset,
+      order: [['createdAt', 'DESC']]
     });
 
     return { rows, count };

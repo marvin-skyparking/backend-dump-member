@@ -128,7 +128,7 @@ export async function createTransaction(
       stnk,
       paymentFile,
       locationCode,
-      NoRef, // Add NoRef here
+      NoRef,
       isActive,
       createdBy,
       updatedBy,
@@ -157,7 +157,8 @@ export async function createTransaction(
     } else if (membershipStatus === 'extend') {
       const updatedTransactionData = {
         ...transactionData, // Spread existing properties
-        isBayar: false // Set isBayar to false
+        isBayar: false, // Set isBayar to false
+        statusProgress: StatusProgress.NEW //Set to new again
       };
 
       transaction = await TransactionService.updateTransactionData(
