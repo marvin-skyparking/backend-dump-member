@@ -6,7 +6,7 @@ import {
   updateLocationPrice,
   deleteLocationPrice
 } from '../services/priceLocation.service'; // Assuming the service is in the 'services' directory
-import { OK, ServerError } from '../utils/response/common.response';
+import { NotFound, OK, ServerError } from '../utils/response/common.response';
 
 // Create a new location price
 export async function createLocationPriceController(
@@ -53,9 +53,9 @@ export async function getLocationPriceController(req: Request, res: Response) {
 
     const locationPrice = await getLocationPrice(locationCode);
     if (!locationPrice) {
-      return res.status(404).json({ error: 'Location price not found.' });
+      return NotFound(res, 'Location Not Found');
     }
-    return res.status(200).json(locationPrice);
+    return OK(res, 'Get Data Location Successfully', locationPrice);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -71,15 +71,11 @@ export async function updateLocationPriceController(
     const data = req.body;
     const updated = await updateLocationPrice(locationId, data);
     if (updated === 0) {
-      return res
-        .status(404)
-        .json({ error: 'Location price not found or no changes made.' });
+      return NotFound(res, 'Location price not found or no changes made.');
     }
-    return res
-      .status(200)
-      .json({ message: 'Location price updated successfully.' });
+    return OK(res, 'Update Data Location Successfully', updated);
   } catch (error: any) {
-    return res.status(400).json({ error: error.message });
+    return ServerError(req, res, error?.message, error);
   }
 }
 
@@ -92,12 +88,10 @@ export async function deleteLocationPriceController(
     const locationId = Number(req.params.locationId);
     const deleted = await deleteLocationPrice(locationId);
     if (deleted === 0) {
-      return res.status(404).json({ error: 'Location price not found.' });
+      return NotFound(res, 'Location price not found or no changes made.');
     }
-    return res
-      .status(200)
-      .json({ message: 'Location price deleted successfully.' });
+    return OK(res, 'Delete Data Location Successfully', deleted);
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return ServerError(req, res, error?.message, error);
   }
 }

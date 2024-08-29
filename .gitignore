@@ -9,10 +9,10 @@ bundle
 licensePlate
 stnk
 paymentFile
-.jpg
-.png
-.jpeg
-.pdf
+*.jpg
+*.png
+*.jpeg
+*.pdf
 # Local Netlify folder
 .netlify
 

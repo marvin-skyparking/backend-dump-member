@@ -34,6 +34,7 @@ import Transaction, {
   TransactionAttributes
 } from '../model/dataTransaksi.model';
 import EnvConfig from '../config/envConfig';
+import { insertActivityLog } from '../services/activityLog.service';
 
 // Define type for the file fields
 export async function createTransaction(
@@ -453,6 +454,8 @@ export async function exportDumpDataMembersToExcel(
   req: Request,
   res: Response
 ): Promise<any> {
+  const { admin_user } = req.body;
+
   try {
     // Fetch dump data members that have not been exported yet and have Payment as 'BELUM BAYAR'
     const dumpDataMembers = await dumpDataMember.findAll({
@@ -465,6 +468,18 @@ export async function exportDumpDataMembersToExcel(
     if (dumpDataMembers.length === 0) {
       return NotFound(res, 'No data available for export.');
     }
+
+    const activityLogData = {
+      module_name: 'EXPORT_STAGE',
+      finance_approval: '', // Save ApprovedBy to finance_approval
+      admin_user: admin_user, // You can adjust this if necessary
+      admin_stage: 'EXPORT_DATA_TO_POST', // Adjust as needed
+      status: JSON.stringify(dumpDataMembers), // Adjust status based on your requirements
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const addActivityLogs = await insertActivityLog(activityLogData);
 
     // Create a new workbook and worksheet
     const workbook = new ExcelJS.Workbook();
@@ -555,6 +570,9 @@ export async function updateTransactionPaymentStatus(
     const noCard = records.NoCard; // Adjust if necessary
     const plateNumber = records.PlateNumber; // Adjust if necessary
 
+    if (records.isBayar === true) {
+      return BadRequest(res, 'Transaksi Sudah Dibayar');
+    }
     // Extract ApprovedBy from request body
     const { ApprovedBy } = req.body; // Assuming ApprovedBy is sent in the request body
     // Mark transaction as paid
@@ -569,6 +587,17 @@ export async function updateTransactionPaymentStatus(
       plateNumber
     );
 
+    const activityLogData = {
+      module_name: 'FINANCE_APPROVAL',
+      finance_approval: ApprovedBy, // Save ApprovedBy to finance_approval
+      admin_user: '', // You can adjust this if necessary
+      admin_stage: '', // Adjust as needed
+      status: JSON.stringify(records), // Adjust status based on your requirements
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const addActivityLogs = await insertActivityLog(activityLogData);
     // Check if the transaction was updated
     if (affectedRows === 0) {
       return BadRequest(res, `Transaction with ID ${id} not found.`);
@@ -666,24 +695,25 @@ export async function handleUpdateStatus(
   res: Response
 ): Promise<Response> {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, admin_user } = req.body;
 
   if (!status || !Object.values(StatusProgress).includes(status)) {
-    return res.status(400).json({ message: 'Invalid status provided' });
+    return BadRequest(res, 'Invalid status Provided');
   }
 
   try {
     const currentTransaction = await Transaction.findByPk(id);
 
     if (!currentTransaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return NotFound(res, 'Transaction Not Found');
     }
 
     const currentStatus = currentTransaction.statusProgress;
     if (!allowedTransitions[currentStatus].includes(status as StatusProgress)) {
-      return res.status(400).json({
-        message: `Invalid transition from ${currentStatus} to ${status}`
-      });
+      return BadRequest(
+        res,
+        `Invalid transition from ${currentStatus} to ${status}`
+      );
     }
 
     const updatedTransaction = await TransactionService.updateStatusProgress(
@@ -691,7 +721,7 @@ export async function handleUpdateStatus(
       status as StatusProgress
     );
 
-    if (status === 'take') {
+    if (status === 'take' && updatedTransaction?.membershipStatus === 'new') {
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
@@ -707,17 +737,56 @@ export async function handleUpdateStatus(
 
       try {
         const response = await axios.get(fonteAPI);
-        console.log('API response:', response.data);
+        //console.log('API response:', response.data);
       } catch (apiError) {
-        console.error('Error calling Fonte API:', apiError);
+        //console.error('Error calling Fonte API:', apiError);
+      }
+    } else if (
+      status === 'take' &&
+      updatedTransaction?.membershipStatus === 'extend'
+    ) {
+      const fullname = updatedTransaction?.fullname;
+      const phoneNumber = updatedTransaction?.phonenumber;
+      const noRef = updatedTransaction?.NoRef;
+      const noCard = updatedTransaction?.NoCard;
+
+      const fonteAPI =
+        EnvConfig.FONTE_ENDPOINT +
+        '?token=' +
+        EnvConfig.FONTE_TOKEN +
+        '&target=' +
+        phoneNumber +
+        '&message=' +
+        `Hi ${fullname}, Member anda sudah di perpanjang masa aktifnya terimakasih dengan Nomor Kartu ${noCard} dengan Nomor Antrian ${noRef}`;
+
+      try {
+        const response = await axios.get(fonteAPI);
+        //console.log('API response:', response.data);
+      } catch (apiError) {
+        //console.error('Error calling Fonte API:', apiError);
       }
     }
 
+    const activityLogData = {
+      module_name: 'ADMIN_STAGE',
+      finance_approval: '', // Save ApprovedBy to finance_approval
+      admin_user: admin_user, // You can adjust this if necessary
+      admin_stage: status, // Adjust as needed
+      status: JSON.stringify(updatedTransaction), // Adjust status based on your requirements
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const addActivityLogs = await insertActivityLog(activityLogData);
+
     return res.status(200).json(updatedTransaction);
-  } catch (error) {
-    console.error('Error updating transaction status:', error);
-    return res
-      .status(500)
-      .json({ message: 'Failed to update transaction status' });
+  } catch (error: any) {
+    //console.error('Error updating transaction status:', error);
+    return ServerError(
+      req,
+      res,
+      error?.message || 'Failed to Update Transaction Status',
+      error
+    );
   }
 }

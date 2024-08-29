@@ -25,3 +25,48 @@ Dockerfile
 .vscode
 .idea
 *.swp
+
+# Node modules are installed inside the Docker container, so ignore local node_modules
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore local build outputs
+dist
+build
+
+# Ignore development files
+*.md
+*.git
+*.gitignore
+
+# Ignore environment variables files
+.env
+.env.local
+
+# Ignore Docker-specific files
+Dockerfile
+.dockerignore
+
+# Ignore local IDE/editor files
+.vscode
+.idea
+*.swp
+
+# Ignore image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Ignore PDF files
+*.pdf
+
+# Ignore any files that are commonly generated or temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Exclude all other files and directories not explicitly ignored
+**
