@@ -145,11 +145,18 @@ export async function createTransaction(
     }
 
     const isQuotaSufficient =
-      (location.quotaMobil > 0 && vehicletype === 'MOBIL') ||
-      (location.quotaMotor > 0 && vehicletype === 'MOTOR');
+      (location.QuotaMobilRemaining > 0 &&
+        location.cardMobilRemaining > 0 &&
+        vehicletype === 'MOBIL') ||
+      (location.QuotaMotorRemaining > 0 &&
+        location.cardMotorRemaining > 0 &&
+        vehicletype === 'MOTOR');
 
     if (!isQuotaSufficient) {
-      return BadRequest(res, 'Quota habis.');
+      return BadRequest(
+        res,
+        'Quota Kartu atau Kapasitas habis Silahkan Hubungi CS'
+      );
     }
 
     let transaction;
@@ -162,7 +169,7 @@ export async function createTransaction(
         statusProgress: StatusProgress.NEW //Set to new again
       };
 
-      transaction = await TransactionService.updateTransactionData(
+      const transaction = await TransactionService.updateTransactionData(
         NoCard,
         updatedTransactionData
       );
@@ -745,6 +752,7 @@ export async function handleUpdateStatus(
       status === 'take' &&
       updatedTransaction?.membershipStatus === 'extend'
     ) {
+      const id = updatedTransaction?.id;
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
@@ -761,6 +769,12 @@ export async function handleUpdateStatus(
 
       try {
         const response = await axios.get(fonteAPI);
+        if (response) {
+          await TransactionService.updateStatusProgress(
+            id,
+            StatusProgress.DONE
+          );
+        }
         //console.log('API response:', response.data);
       } catch (apiError) {
         //console.error('Error calling Fonte API:', apiError);
