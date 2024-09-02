@@ -45,19 +45,19 @@ export async function createTransaction(
     const currentDate = new Date();
 
     // Start and end of the restriction period
-    const startRestriction = setDate(new Date(), 20);
-    const nextMonth = addMonths(new Date(), 1);
-    const endRestriction = setDate(startOfMonth(nextMonth), 5);
+    // const startRestriction = setDate(new Date(), 20);
+    // const nextMonth = addMonths(new Date(), 1);
+    // const endRestriction = setDate(startOfMonth(nextMonth), 5);
 
-    if (
-      isBefore(currentDate, startRestriction) ||
-      isAfter(currentDate, endRestriction)
-    ) {
-      return BadRequest(
-        res,
-        'API access is only allowed between the 20th of this month and the 5th of the next month.'
-      );
-    }
+    // if (
+    //   isBefore(currentDate, startRestriction) ||
+    //   isAfter(currentDate, endRestriction)
+    // ) {
+    //   return BadRequest(
+    //     res,
+    //     'API access is only allowed between the 20th of this month and the 5th of the next month.'
+    //   );
+    // }
 
     // Extract and decrypt payload
     const encryptedPayload: string = req.body.encryptedPayload;

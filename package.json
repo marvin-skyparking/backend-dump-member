@@ -18,7 +18,7 @@
     "prettier:format": "prettier --config .prettierrc src/**/*.ts --write",
     "seed": "sequelize-cli db:seed: ll",
     "seed:undo": "sequelize-cli db:seed:undo",
-    "copy-static-files": "copyfiles -u 1 ./src/uploads/**/* ./dist/uploads"
+    "copy-static-files": "copyfiles -u 1 ./src/uploads/**/*"
   },
   "lint-staged": {
     "*.ts": "eslint --fix"
