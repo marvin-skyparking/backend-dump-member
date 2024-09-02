@@ -2,19 +2,27 @@ import multer from 'multer';
 import path from 'path';
 import { Request, Response, NextFunction } from 'express';
 import { BadRequest } from '../utils/response/common.response';
+import EnvConfig from '../config/envConfig';
+
+const isProduction = EnvConfig.NODE_ENV === 'production';
+const rootPath = isProduction ? 'dist' : 'src'; // Switch based on environment
 
 // Storage configuration for files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    let uploadPath = '';
+
     if (file.fieldname === 'licensePlate') {
-      cb(null, 'src/uploads/licensePlate/');
+      uploadPath = path.join(rootPath, 'uploads/licensePlate/');
     } else if (file.fieldname === 'stnk') {
-      cb(null, 'src/uploads/stnk/');
+      uploadPath = path.join(rootPath, 'uploads/stnk/');
     } else if (file.fieldname === 'paymentFile') {
-      cb(null, 'src/uploads/transfer/');
+      uploadPath = path.join(rootPath, 'uploads/transfer/');
     } else {
-      cb(new Error('Invalid Field Name'), ''); // Correctly passing an Error object
+      return cb(new Error('Invalid Field Name'), '');
     }
+
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -32,7 +40,7 @@ const fileFilter = (
   cb: multer.FileFilterCallback
 ) => {
   if (!file.originalname.match(/\.(jpg|jpeg|png|pdf)$/)) {
-    return cb(new Error()); // Correctly passing an Error object
+    return cb(new Error('Invalid file type'));
   }
   cb(null, true);
 };
