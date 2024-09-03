@@ -446,3 +446,28 @@ export async function getTransactionsByStatus(
     throw new Error('Failed to retrieve transactions by status');
   }
 }
+
+export async function getPaymentStatusByFields(
+  noCard: string | null,
+  plateNumber: string | null
+): Promise<Transaction | null> {
+  try {
+    // Ensure both noCard and plateNumber are provided
+    if (!noCard || !plateNumber) {
+      throw new Error('Both noCard and plateNumber must be provided.');
+    }
+
+    // Query the database to find a record that matches both noCard and plateNumber
+    const result = await Transaction.findOne({
+      where: {
+        NoCard: noCard,
+        PlateNumber: plateNumber
+      }
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error retrieving payment status:', error);
+    throw new Error('Failed to retrieve payment status');
+  }
+}

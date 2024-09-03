@@ -112,8 +112,6 @@ export async function createTransaction(
           'Untuk Perpanjangan Silahkan Nomor Kartu & Upload Bukti Bayar.'
         );
       }
-    } else {
-      return BadRequest(res, 'Invalid membership status.');
     }
 
     const NoRef = generateRandomNoRef();
@@ -164,6 +162,7 @@ export async function createTransaction(
     }
 
     let transaction;
+
     if (membershipStatus === 'new') {
       //Check Plate Number is Exist
       const plateData = await TransactionService.findTransactionByPlate(
@@ -177,16 +176,34 @@ export async function createTransaction(
       }
       transaction = await TransactionService.createTransaction(transactionData);
     } else if (membershipStatus === 'extend') {
-      const updatedTransactionData = {
-        ...transactionData, // Spread existing properties
-        isBayar: false, // Set isBayar to false
-        statusProgress: StatusProgress.NEW //Set to new again
-      };
-
-      transaction = await TransactionService.updateTransactionData(
-        NoCard,
-        updatedTransactionData
+      const findData = await TransactionService.getPaymentStatusByFields(
+        transactionData.NoCard,
+        transactionData.PlateNumber
       );
+
+      const dataPlate = await TransactionService.findTransactionByPlate(
+        transactionData.PlateNumber
+      );
+
+      if (dataPlate?.NoCard != transactionData.NoCard) {
+        return BadRequest(res, 'Nomor Plat tidak Sesuai dengan Nomor Kartu');
+      }
+
+      if (!findData) {
+        transaction =
+          await TransactionService.createTransaction(transactionData);
+      } else {
+        const updatedTransactionData = {
+          ...transactionData, // Spread existing properties
+          isBayar: false, // Set isBayar to false
+          statusProgress: StatusProgress.NEW //Set to new again
+        };
+
+        transaction = await TransactionService.updateTransactionData(
+          NoCard,
+          updatedTransactionData
+        );
+      }
     }
 
     // Ensure transaction is not undefined
