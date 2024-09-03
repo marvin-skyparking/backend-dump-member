@@ -758,9 +758,9 @@ export async function handleUpdateStatus(
 
       try {
         const response = await axios.get(fonteAPI);
-        //console.log('API response:', response.data);
+        console.log('API response:', response.data);
       } catch (apiError) {
-        //console.error('Error calling Fonte API:', apiError);
+        console.error('Error calling Fonte API:', apiError);
       }
     } else if (
       status === 'take' &&
@@ -789,9 +789,9 @@ export async function handleUpdateStatus(
             StatusProgress.DONE
           );
         }
-        //console.log('API response:', response.data);
+        console.log('API response:', response.data);
       } catch (apiError) {
-        //console.error('Error calling Fonte API:', apiError);
+        console.error('Error calling Fonte API:', apiError);
       }
     }
 
