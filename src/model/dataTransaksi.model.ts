@@ -41,6 +41,8 @@ export interface TransactionAttributes {
   deletedOn?: Date;
   deletedBy?: string;
   statusProgress: StatusProgress;
+  noRek: string; // New field
+  namaRek: string; // New field
   createdAt?: Date;
   updatedAt?: Date;
   isBayar?: Boolean;
@@ -74,6 +76,8 @@ class Transaction
   public deletedOn?: Date;
   public deletedBy?: string;
   public isBayar?: Boolean | undefined;
+  public noRek!: string; // New field
+  public namaRek!: string; // New field
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -168,6 +172,16 @@ Transaction.init(
     deletedBy: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    noRek: {
+      // New field
+      type: DataTypes.STRING,
+      allowNull: false // Not allowed to be null
+    },
+    namaRek: {
+      // New field
+      type: DataTypes.STRING,
+      allowNull: false // Not allowed to be null
     },
     createdAt: {
       type: DataTypes.DATE,

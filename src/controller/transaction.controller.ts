@@ -80,6 +80,8 @@ export async function createTransaction(
       updatedBy,
       deletedOn,
       deletedBy,
+      noRek,
+      namaRek,
       statusProgress
     } = JSON.parse(decryptedPayload);
 
@@ -135,7 +137,9 @@ export async function createTransaction(
       updatedBy,
       deletedOn,
       deletedBy,
-      statusProgress
+      statusProgress,
+      noRek,
+      namaRek
     };
 
     // Quota check
@@ -179,7 +183,7 @@ export async function createTransaction(
         statusProgress: StatusProgress.NEW //Set to new again
       };
 
-      const transaction = await TransactionService.updateTransactionData(
+      transaction = await TransactionService.updateTransactionData(
         NoCard,
         updatedTransactionData
       );
@@ -196,9 +200,9 @@ export async function createTransaction(
 
     // Update location quota
     if (vehicletype === 'MOBIL') {
-      location.quotaMobil -= 1;
+      location.QuotaMobilRemaining -= 1;
     } else if (vehicletype === 'MOTOR') {
-      location.quotaMotor -= 1;
+      location.QuotaMotorRemaining -= 1;
     }
     await location.save();
 
