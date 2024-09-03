@@ -62,4 +62,9 @@ Transactionrouter.post(
   TransactionController.getTransactionData
 );
 
+Transactionrouter.get(
+  '/transactionStatus',
+  TransactionController.getTransactionsByStatus
+);
+
 export default Transactionrouter;

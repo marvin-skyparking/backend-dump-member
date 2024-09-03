@@ -161,6 +161,16 @@ export async function createTransaction(
 
     let transaction;
     if (membershipStatus === 'new') {
+      //Check Plate Number is Exist
+      const plateData = await TransactionService.findTransactionByPlate(
+        transactionData.PlateNumber
+      );
+      if (plateData) {
+        return BadRequest(
+          res,
+          'Plat Nomor Sudah Terdaftar Silahkan Lakukan Perpanjang'
+        );
+      }
       transaction = await TransactionService.createTransaction(transactionData);
     } else if (membershipStatus === 'extend') {
       const updatedTransactionData = {
@@ -802,5 +812,39 @@ export async function handleUpdateStatus(
       error?.message || 'Failed to Update Transaction Status',
       error
     );
+  }
+}
+
+export async function getTransactionsByStatus(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    // Extract status from query parameters
+    const status = req.query.status as StatusProgress;
+
+    // Extract pagination parameters from query
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+
+    // Validate the status parameter
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+
+    // Call the service to get transactions by status with pagination
+    const { transactions, totalCount } =
+      await TransactionService.getTransactionsByStatus(status, page, limit);
+
+    // Return the transactions with pagination details
+    return OK(res, 'Transactions Fetched Successfully', {
+      transactions,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page
+    });
+  } catch (error: any) {
+    // Return server error if something goes wrong
+    return ServerError(req, res, error?.message, error);
   }
 }

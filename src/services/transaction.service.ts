@@ -411,3 +411,38 @@ export async function updateStatusProgress(
     throw new Error('Failed to update statusProgress');
   }
 }
+
+export async function getTransactionsByStatus(
+  status: StatusProgress,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ transactions: Transaction[]; totalCount: number }> {
+  try {
+    // Ensure status is valid before querying
+    if (!status) {
+      throw new Error('Invalid status provided');
+    }
+
+    // Calculate the offset for pagination
+    const offset = (page - 1) * limit;
+
+    // Find transactions by exact status with pagination
+    const { rows: transactions, count: totalCount } =
+      await Transaction.findAndCountAll({
+        where: {
+          statusProgress: {
+            [Op.eq]: status // Ensure exact match for statusProgress
+          }
+        },
+        offset: offset,
+        limit: limit,
+        order: [['createdAt', 'DESC']] // Optional: Order by creation date
+      });
+
+    // Return the transactions along with total count for pagination
+    return { transactions, totalCount };
+  } catch (error) {
+    console.error('Error retrieving transactions by status:', error);
+    throw new Error('Failed to retrieve transactions by status');
+  }
+}
