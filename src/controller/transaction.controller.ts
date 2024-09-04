@@ -758,6 +758,9 @@ export async function handleUpdateStatus(
         `Invalid transition from ${currentStatus} to ${status}`
       );
     }
+    if (currentTransaction?.isBayar != true) {
+      return BadRequest(res, 'Finance Belum Konfirmasi');
+    }
 
     const updatedTransaction = await TransactionService.updateStatusProgress(
       Number(id),
@@ -765,10 +768,6 @@ export async function handleUpdateStatus(
     );
 
     if (status === 'take' && updatedTransaction?.membershipStatus === 'new') {
-      if (updatedTransaction?.isBayar != true) {
-        return BadRequest(res, 'Finance Belum Konfirmasi');
-      }
-
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
@@ -792,10 +791,6 @@ export async function handleUpdateStatus(
       status === 'take' &&
       updatedTransaction?.membershipStatus === 'extend'
     ) {
-      if (updatedTransaction?.isBayar != true) {
-        return BadRequest(res, 'Finance Belum Konfirmasi');
-      }
-
       const id = updatedTransaction?.id;
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
