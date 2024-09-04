@@ -612,11 +612,16 @@ export async function updateTransactionPaymentStatus(
       return BadRequest(res, 'Transaksi Sudah Dibayar');
     }
     // Extract ApprovedBy from request body
-    const { ApprovedBy } = req.body; // Assuming ApprovedBy is sent in the request body
+    const { ApprovedBy, paidAmount } = req.body; // Assuming ApprovedBy is sent in the request body
+
+    if (paidAmount == 0) {
+      return BadRequest(res, 'Silahkan Masukan Jumlah yang dibayarkan');
+    }
     // Mark transaction as paid
     const { affectedRows, updatedTransactions } = await markTransactionAsPaid(
       id,
-      ApprovedBy
+      ApprovedBy,
+      paidAmount
     );
 
     // Update payment status in dump data
@@ -760,6 +765,10 @@ export async function handleUpdateStatus(
     );
 
     if (status === 'take' && updatedTransaction?.membershipStatus === 'new') {
+      if (updatedTransaction?.isBayar != true) {
+        return BadRequest(res, 'Finance Belum Konfirmasi');
+      }
+
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
@@ -783,6 +792,10 @@ export async function handleUpdateStatus(
       status === 'take' &&
       updatedTransaction?.membershipStatus === 'extend'
     ) {
+      if (updatedTransaction?.isBayar != true) {
+        return BadRequest(res, 'Finance Belum Konfirmasi');
+      }
+
       const id = updatedTransaction?.id;
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;

@@ -41,6 +41,7 @@ export interface TransactionAttributes {
   deletedOn?: Date;
   deletedBy?: string;
   statusProgress: StatusProgress;
+  paidAmount?: number;
   noRek: string; // New field
   namaRek: string; // New field
   createdAt?: Date;
@@ -60,6 +61,7 @@ class Transaction
   public fullname!: string;
   public phonenumber!: string;
   public statusProgress!: StatusProgress;
+  public paidAmount?: number;
   public membershipStatus!: MembershipStatus;
   public email!: string;
   public vehicletype!: VehicleType;
@@ -146,6 +148,11 @@ Transaction.init(
     NoRef: {
       type: DataTypes.STRING,
       allowNull: true // NoRef is optional
+    },
+    paidAmount: {
+      type: DataTypes.NUMBER,
+      allowNull: true,
+      defaultValue: 0
     },
     isActive: {
       type: DataTypes.BOOLEAN,

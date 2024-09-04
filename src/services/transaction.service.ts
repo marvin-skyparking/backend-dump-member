@@ -121,14 +121,16 @@ export async function updateTransactionData(
 
 export async function markTransactionAsPaid(
   transactionId: number,
-  ApprovedBy: string
+  ApprovedBy: string,
+  paidAmount: number
 ): Promise<{ affectedRows: number; updatedTransactions: Transaction[] }> {
   try {
     const [affectedRows, updatedTransactions] = await Transaction.update(
       {
         isBayar: true,
         membershipStatus: MembershipStatus.ISMEMBER,
-        approvedBy: ApprovedBy
+        approvedBy: ApprovedBy,
+        paidAmount: paidAmount
       },
       {
         where: { id: transactionId },
