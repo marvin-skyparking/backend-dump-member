@@ -110,15 +110,18 @@ export async function updateTransactionData(
   data: Partial<TransactionAttributes>
 ): Promise<[number, Transaction[]]> {
   try {
+    const transaction = await Transaction.findOne({ where: { NoCard } });
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
     // Filter out any fields that are null or undefined
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(
-        ([_, value]) => value !== null && value !== undefined
-      )
-    );
+    const updatedData = {
+      ...data,
+      stnk: data.stnk ?? transaction.stnk, // Keep the old value if the new one is null
+      licensePlate: data.licensePlate ?? transaction.licensePlate // Keep the old value if the new one is null
+    };
 
-    // Perform the update only with filtered data
-    return await Transaction.update(filteredData, {
+    return await Transaction.update(updatedData, {
       where: { NoCard },
       returning: true
     });
