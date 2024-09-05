@@ -390,6 +390,21 @@ export async function findTransactionByPlate(
   }
 }
 
+export async function findTransactionByCard(
+  NoCard: string
+): Promise<Transaction | null> {
+  try {
+    // Find the transaction by NoCard
+    const transaction = await Transaction.findOne({
+      where: { NoCard } // Specify the condition for the query
+    });
+
+    return transaction;
+  } catch (error) {
+    throw new Error('Failed to find transaction');
+  }
+}
+
 export async function updateStatusProgress(
   id: number,
   status: StatusProgress

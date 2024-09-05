@@ -185,11 +185,15 @@ export async function createTransaction(
         transactionData.PlateNumber
       );
 
-      if (dataPlate?.NoCard != transactionData.NoCard) {
-        return BadRequest(res, 'Nomor Plat tidak Sesuai dengan Nomor Kartu');
-      }
+      const dataCard = await TransactionService.findTransactionByCard(
+        transactionData.NoCard
+      );
 
       if (!findData) {
+        if (findData || dataCard || dataPlate) {
+          return BadRequest(res, 'Nomor Plat tidak Sesuai dengan Nomor Kartu');
+        }
+
         transaction =
           await TransactionService.createTransaction(transactionData);
       } else {
