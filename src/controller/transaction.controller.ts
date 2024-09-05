@@ -756,14 +756,12 @@ export async function handleUpdateStatus(
     }
 
     const currentStatus = currentTransaction.statusProgress;
+
     if (!allowedTransitions[currentStatus].includes(status as StatusProgress)) {
       return BadRequest(
         res,
         `Invalid transition from ${currentStatus} to ${status}`
       );
-    }
-    if (currentTransaction?.isBayar != true) {
-      return BadRequest(res, 'Finance Belum Konfirmasi');
     }
 
     const updatedTransaction = await TransactionService.updateStatusProgress(
@@ -771,10 +769,18 @@ export async function handleUpdateStatus(
       status as StatusProgress
     );
 
-    if (status === 'take' && updatedTransaction?.membershipStatus === 'new') {
+    if (status == 'take' && updatedTransaction?.membershipStatus == 'new') {
+      const id = updatedTransaction?.id;
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
+
+      const updateStatusMember =
+        await TransactionService.updateStatusMembership(id);
+
+      if (!updateStatusMember) {
+        return BadRequest(res, 'Failed to update membership status');
+      }
 
       const fonteAPI =
         EnvConfig.FONTE_ENDPOINT +
@@ -783,7 +789,7 @@ export async function handleUpdateStatus(
         '&target=' +
         phoneNumber +
         '&message=' +
-        `Hi ${fullname}, Silahkan Ambil Kartu dengan Antrian ${noRef}`;
+        `Hi ${fullname}, Silahkan ambil kartu di petugas kami dengan nomor antrian ${noRef}`;
 
       try {
         const response = await axios.get(fonteAPI);
@@ -792,14 +798,21 @@ export async function handleUpdateStatus(
         console.error('Error calling Fonte API:', apiError);
       }
     } else if (
-      status === 'take' &&
-      updatedTransaction?.membershipStatus === 'extend'
+      status == 'take' &&
+      updatedTransaction?.membershipStatus == 'extend'
     ) {
       const id = updatedTransaction?.id;
       const fullname = updatedTransaction?.fullname;
       const phoneNumber = updatedTransaction?.phonenumber;
       const noRef = updatedTransaction?.NoRef;
       const noCard = updatedTransaction?.NoCard;
+
+      const updateStatusMember =
+        await TransactionService.updateStatusMembership(id);
+
+      if (!updateStatusMember) {
+        return BadRequest(res, 'Failed to update membership status');
+      }
 
       const fonteAPI =
         EnvConfig.FONTE_ENDPOINT +
@@ -808,7 +821,7 @@ export async function handleUpdateStatus(
         '&target=' +
         phoneNumber +
         '&message=' +
-        `Hi ${fullname}, Member anda sudah di perpanjang masa aktifnya terimakasih dengan Nomor Kartu ${noCard} dengan Nomor Antrian ${noRef}`;
+        `Hi ${fullname}, Member anda dengan nomor kartu ${noCard} sudah berhasil di perpanjang silahkan gunakan member anda kembali terimakasih`;
 
       try {
         const response = await axios.get(fonteAPI);

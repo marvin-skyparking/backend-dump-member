@@ -110,7 +110,15 @@ export async function updateTransactionData(
   data: Partial<TransactionAttributes>
 ): Promise<[number, Transaction[]]> {
   try {
-    return await Transaction.update(data, {
+    // Filter out any fields that are null or undefined
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, value]) => value !== null && value !== undefined
+      )
+    );
+
+    // Perform the update only with filtered data
+    return await Transaction.update(filteredData, {
       where: { NoCard },
       returning: true
     });
@@ -128,7 +136,6 @@ export async function markTransactionAsPaid(
     const [affectedRows, updatedTransactions] = await Transaction.update(
       {
         isBayar: true,
-        membershipStatus: MembershipStatus.ISMEMBER,
         approvedBy: ApprovedBy,
         paidAmount: paidAmount
       },
@@ -486,5 +493,28 @@ export async function getPaymentStatusByFields(
   } catch (error) {
     console.error('Error retrieving payment status:', error);
     throw new Error('Failed to retrieve payment status');
+  }
+}
+
+export async function updateStatusMembership(
+  id: number
+): Promise<Transaction | null> {
+  try {
+    // Find the transaction by ID
+    const transaction = await Transaction.findByPk(id);
+
+    // If the transaction doesn't exist, return null or handle as needed
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    // Update the statusProgress
+    transaction.membershipStatus = MembershipStatus.ISMEMBER;
+    await transaction.save(); // Save the updated transaction
+
+    return transaction; // Return the updated transaction
+  } catch (error) {
+    console.error('Error updating statusProgress:', error);
+    throw new Error('Failed to update statusProgress');
   }
 }
