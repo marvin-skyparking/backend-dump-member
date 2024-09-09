@@ -529,17 +529,18 @@ export async function exportDumpDataMembersToExcel(
 
     // Define columns
     worksheet.columns = [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Name', key: 'nama', width: 30 },
-      { header: 'Plate Number', key: 'noPolisi', width: 20 },
-      { header: 'Product ID', key: 'idProdukPass', width: 20 },
-      { header: 'Payment', key: 'Payment', width: 15 },
-      { header: 'Product Code', key: 'CodeProduct', width: 15 },
-      { header: 'End Date', key: 'TGL_AKHIR', width: 20 },
-      { header: 'Group ID', key: 'idGrup', width: 15 },
-      { header: 'Active', key: 'FAKTIF', width: 10 },
-      { header: 'Updated', key: 'FUPDATE', width: 10 },
-      { header: 'Card Number', key: 'NoKartu', width: 20 },
+      { header: 'nama', key: 'nama', width: 30 },
+      { header: 'noPass', key: 'noPolisi', width: 20 },
+      { header: 'noPolisi', key: 'noPolisi', width: 20 },
+      { header: 'idProdukPass', key: 'idProdukPass', width: 20 },
+      { header: 'idProdukPass', key: 'Payment', width: 15 },
+      { header: 'TGL Akhir', key: 'TGL_AKHIR', width: 20 },
+      { header: 'idGrup', key: 'idGrup', width: 15 },
+      { header: 'FAKTIF', key: 'FAKTIF', width: 10 },
+      { header: 'FUPDATE', key: 'FUPDATE', width: 10 },
+      { header: 'no Kartu', key: 'NoKartu', width: 20 },
+      { header: 'idProdukPass', key: 'CodeProduct', width: 15 },
+      { header: 'No Kartu', key: 'NoKartu', width: 20 },
       { header: 'Created At', key: 'createdAt', width: 20 },
       { header: 'Updated At', key: 'updatedAt', width: 20 }
     ];
@@ -550,6 +551,7 @@ export async function exportDumpDataMembersToExcel(
       worksheet.addRow({
         id: member.id,
         nama: member.nama,
+        noPass: member.noPolisi,
         noPolisi: member.noPolisi,
         idProdukPass: member.idProdukPass,
         Payment: member.Payment,
@@ -559,6 +561,7 @@ export async function exportDumpDataMembersToExcel(
         FAKTIF: member.FAKTIF,
         FUPDATE: member.FUPDATE,
         NoKartu: member.NoKartu,
+        no_Kartu: member.NoKartu,
         createdAt: member.createdAt,
         updatedAt: member.updatedAt
       });

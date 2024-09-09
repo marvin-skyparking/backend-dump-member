@@ -43,7 +43,8 @@ export async function getAllTransactions(
       'PlateNumber',
       'vehicletype',
       'membershipStatus',
-      'statusProgress'
+      'statusProgress',
+      'NoRef'
     ];
 
     // Build search condition using LIKE instead of ILIKE
