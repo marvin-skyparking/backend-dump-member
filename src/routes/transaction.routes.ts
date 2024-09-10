@@ -42,7 +42,7 @@ Transactionrouter.put(
   '/updateStage/:id',
   TransactionController.handleUpdateStatus
 );
-Transactionrouter.get(
+Transactionrouter.post(
   '/export-dump-data',
   TransactionController.exportDumpDataMembersToExcel
 );
