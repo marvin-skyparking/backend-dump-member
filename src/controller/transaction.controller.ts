@@ -229,7 +229,7 @@ export async function createTransaction(
 
     // Calculate TGLAKHIR
     const nextMonthForTGLAKHIR = addMonths(new Date(), 1);
-    const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 6);
+    const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 5);
 
     // Insert dump data
     const dumpMember = {
@@ -530,7 +530,7 @@ export async function exportDumpDataMembersToExcel(
     // Define columns
     worksheet.columns = [
       { header: 'nama', key: 'nama', width: 30 },
-      { header: 'noPass', key: 'noPolisi', width: 20 },
+      { header: 'noPass', key: 'noPass', width: 20 },
       { header: 'noPolisi', key: 'noPolisi', width: 20 },
       { header: 'idProdukPass', key: 'idProdukPass', width: 20 },
       { header: 'idProdukPass', key: 'Payment', width: 15 },
@@ -538,20 +538,17 @@ export async function exportDumpDataMembersToExcel(
       { header: 'idGrup', key: 'idGrup', width: 15 },
       { header: 'FAKTIF', key: 'FAKTIF', width: 10 },
       { header: 'FUPDATE', key: 'FUPDATE', width: 10 },
-      { header: 'no Kartu', key: 'NoKartu', width: 20 },
+      { header: 'noKartu', key: 'no_Kartu', width: 20 },
       { header: 'idProdukPass', key: 'CodeProduct', width: 15 },
-      { header: 'No Kartu', key: 'NoKartu', width: 20 },
-      { header: 'Created At', key: 'createdAt', width: 20 },
-      { header: 'Updated At', key: 'updatedAt', width: 20 }
+      { header: 'No_Kartu', key: 'NoKartu', width: 20 }
     ];
 
     // Add rows
     const memberIds: number[] = [];
     dumpDataMembers.forEach((member) => {
       worksheet.addRow({
-        id: member.id,
         nama: member.nama,
-        noPass: member.noPolisi,
+        noPass: member.NoKartu,
         noPolisi: member.noPolisi,
         idProdukPass: member.idProdukPass,
         Payment: member.Payment,
@@ -561,9 +558,7 @@ export async function exportDumpDataMembersToExcel(
         FAKTIF: member.FAKTIF,
         FUPDATE: member.FUPDATE,
         NoKartu: member.NoKartu,
-        no_Kartu: member.NoKartu,
-        createdAt: member.createdAt,
-        updatedAt: member.updatedAt
+        no_Kartu: member.NoKartu
       });
 
       // Collect member IDs to mark them as exported later
