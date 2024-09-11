@@ -1,10 +1,11 @@
 export interface IEnvInterface {
   NODE_ENV: string;
+  DB_HOST: string;
   APP_URL: string;
   PORT: string;
-  DB_DEV: string;
-  USERNAME_DB_DEV: string;
-  PASSWORD_DB_DEV: string;
+  DB_PROD: string;
+  USERNAME_DB_PROD: string;
+  PASSWORD_DB_PROD: string;
   ENABLE_SWAGGER: boolean;
   SENTRY_URI: string;
   SENTRY_ENABLE: boolean;
