@@ -5,9 +5,15 @@ module.exports = {
   async up (queryInterface, Sequelize) {
     // Create the MasterLocationPrice table
     await queryInterface.createTable('MasterLocationPrices', {
-      locationCode: {
-        type: Sequelize.STRING(50),
-        primaryKey: true,
+      id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+      },
+      locationId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       locationName: {
         type: Sequelize.STRING(100),
