@@ -315,7 +315,7 @@ export async function getTransactionById(
 ): Promise<Response> {
   try {
     const id = parseInt(req.params.id, 10); // Convert ID to number
-    const transaction = await TransactionService.getTransactionById(id);
+    const transaction = await TransactionService.getTransactionByIds(id);
     if (!transaction) {
       return NotFound(res, 'Transaction not found');
     }
@@ -355,7 +355,8 @@ export async function updateTransaction(
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
     // Fetch the existing transaction to get old file paths
-    const existingTransaction = await TransactionService.getTransactionById(id);
+    const existingTransaction =
+      await TransactionService.getTransactionByIds(id);
     if (!existingTransaction) {
       return NotFound(res, 'Transaction not found');
     }
@@ -405,6 +406,23 @@ export async function updateTransaction(
     if (updatedCount === 0) {
       return NotFound(res, 'Transaction not found');
     }
+
+    const getPlate = await TransactionService.getTransactionByIds(id);
+
+    const plateNumber = getPlate?.PlateNumber;
+
+    if (!plateNumber) {
+      return NotFound(res, 'Plat Nomor Tidak ada di dump');
+    }
+
+    const cardNo = updatedData.NoCard;
+
+    const updateDumpCust = await TransactionService.updateNoKartuByPlateNumber(
+      plateNumber,
+      cardNo
+    );
+
+    console.log(cardNo);
 
     return OK(res, 'Data Transaction Updated Successfully', updatedRows[0]);
   } catch (error: any) {

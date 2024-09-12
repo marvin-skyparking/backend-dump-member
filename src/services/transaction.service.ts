@@ -81,7 +81,7 @@ export async function getAllTransactions(
 }
 
 // Get a transaction by ID
-export async function getTransactionById(
+export async function getTransactionByIds(
   id: number
 ): Promise<Transaction | null> {
   try {
@@ -520,5 +520,35 @@ export async function updateStatusMembership(
   } catch (error) {
     console.error('Error updating statusProgress:', error);
     throw new Error('Failed to update statusProgress');
+  }
+}
+
+export async function updateNoKartuByPlateNumber(
+  plateNumber: string,
+  noKartu: string
+) {
+  try {
+    const noPolisi = plateNumber;
+    // Find the existing record by plate number
+    const existingDumpData = await dumpDataMember.findOne({
+      where: { noPolisi }
+    });
+
+    // If the record does not exist, throw an error
+    if (!existingDumpData) {
+      throw new Error(`Record with plate number ${plateNumber} not found.`);
+    }
+
+    // Update the NoKartu field
+    existingDumpData.NoKartu = noKartu;
+
+    // Save the updated record
+    const updatedDumpData = await existingDumpData.save();
+
+    // Return the updated record
+    return updatedDumpData;
+  } catch (error: any) {
+    // Handle errors
+    throw new Error(`Error updating NoKartu: ${error.message}`);
   }
 }
