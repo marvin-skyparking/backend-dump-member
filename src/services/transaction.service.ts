@@ -61,7 +61,7 @@ export async function getAllTransactions(
       where: searchCondition,
       limit,
       offset,
-      order: [['createdAt', 'DESC']] // Order by createdAt in ascending order
+      order: [[sequelize.fn('GREATEST', sequelize.col('createdAt')), 'ASC']]
     });
 
     return { rows, count };
