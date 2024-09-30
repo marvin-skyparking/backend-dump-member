@@ -35,7 +35,7 @@ import Transaction, {
 } from '../model/dataTransaksi.model';
 import EnvConfig from '../config/envConfig';
 import { insertActivityLog } from '../services/activityLog.service';
-
+const { format } = require('date-fns');
 // Define type for the file fields
 export async function createTransaction(
   req: Request,
@@ -571,7 +571,7 @@ export async function exportDumpDataMembersToExcel(
         idProdukPass: member.idProdukPass,
         Payment: member.Payment,
         CodeProduct: member.CodeProduct,
-        TGL_AKHIR: member.TGL_AKHIR,
+        TGL_AKHIR: format(member.TGL_AKHIR, 'dd/MM/yyyy'),
         idGrup: member.idGrup,
         FAKTIF: member.FAKTIF,
         FUPDATE: member.FUPDATE,
