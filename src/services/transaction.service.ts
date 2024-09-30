@@ -61,7 +61,7 @@ export async function getAllTransactions(
       where: searchCondition,
       limit,
       offset,
-      order: [['createdAt', 'ASC']] // Order by createdAt in ascending order
+      order: [['createdAt', 'DESC']] // Order by createdAt in ascending order
     });
 
     return { rows, count };
