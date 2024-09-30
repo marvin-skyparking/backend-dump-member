@@ -68,7 +68,7 @@ export async function getAllTransactions(
             sequelize.col('createdAt'),
             sequelize.col('updatedAt')
           ),
-          'DESC'
+          'ASC'
         ]
       ]
     });
