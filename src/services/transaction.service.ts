@@ -464,7 +464,7 @@ export async function getTransactionsByStatus(
         },
         offset: offset,
         limit: limit,
-        order: [['createdAt', 'DESC']] // Optional: Order by creation date
+        order: [['createdAt', 'ASC']] // Optional: Order by creation date
       });
 
     // Return the transactions along with total count for pagination
