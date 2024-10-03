@@ -17,3 +17,11 @@ paymentFile
 .netlify
 
 .vercel
+
+
+#Configuration Files
+# Ignore configuration files
+config.json
+config.ts
+envConfig.ts
+database.ts
