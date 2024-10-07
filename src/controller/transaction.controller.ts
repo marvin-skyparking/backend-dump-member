@@ -910,3 +910,35 @@ export async function getTransactionsByStatus(
     return ServerError(req, res, error?.message, error);
   }
 }
+
+export async function sendFailureImage(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { pesan } = req.body;
+    const data = await TransactionService.getTransactionByIds(id);
+
+    if (!data) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+    try {
+      const fonteAPI =
+        EnvConfig.FONTE_ENDPOINT +
+        '?token=' +
+        EnvConfig.FONTE_TOKEN +
+        '&target=' +
+        data.phonenumber +
+        '&message=' +
+        `Hi ${data.fullname}, dengan plat nomor ${data.PlateNumber} dan mohon diubah foto ${pesan} anda salah`;
+      const response = await axios.get(fonteAPI);
+      if (!response) {
+        return BadRequest(res, 'failed send message');
+      }
+      console.log('API response:', response.data);
+      return OK(res, 'Message sent successfully');
+    } catch (error: any) {
+      return ServerError(req, res, error?.message, error);
+    }
+  } catch (error: any) {
+    return ServerError(req, res, error?.message, error);
+  }
+}

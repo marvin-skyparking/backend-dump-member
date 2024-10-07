@@ -67,4 +67,9 @@ Transactionrouter.get(
   TransactionController.getTransactionsByStatus
 );
 
+Transactionrouter.post(
+  '/sendFailureImage/:id',
+  TransactionController.sendFailureImage
+);
+
 export default Transactionrouter;
