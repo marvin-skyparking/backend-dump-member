@@ -18,7 +18,11 @@ import {
 } from '../utils/response/common.response';
 import dumpDataMember from '../model/dumpData.model';
 import { insertDumpData, markAsExported } from '../services/dumpData.service';
-import { generateRandomNoRef, getCodeProduct } from '../utils/helper.utils';
+import {
+  calculateTGLAKHIR,
+  generateRandomNoRef,
+  getCodeProduct
+} from '../utils/helper.utils';
 import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
 import { markTransactionAsPaid } from '../services/transaction.service';
@@ -71,6 +75,7 @@ export async function createTransaction(
       phonenumber,
       membershipStatus,
       email,
+      namaProduk,
       vehicletype,
       NoCard,
       PlateNumber,
@@ -122,6 +127,7 @@ export async function createTransaction(
       phonenumber,
       membershipStatus,
       email,
+      namaProduk,
       vehicletype,
       NoCard,
       PlateNumber,
@@ -139,6 +145,13 @@ export async function createTransaction(
       noRek,
       namaRek
     };
+
+    // Calculate TGLAKHIR
+    const TGLAKHIR = calculateTGLAKHIR(namaProduk);
+
+    if (transactionData.namaProduk == '') {
+      return BadRequest(res, 'Tolong Isi Nama Produk');
+    }
 
     // Quota check
     const location = await getMasterLocationByCode(locationCode);
@@ -226,10 +239,6 @@ export async function createTransaction(
       location.QuotaMotorRemaining -= 1;
     }
     await location.save();
-
-    // Calculate TGLAKHIR
-    const nextMonthForTGLAKHIR = addMonths(new Date(), 1);
-    const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 5);
 
     // Insert dump data
     const dumpMember = {
