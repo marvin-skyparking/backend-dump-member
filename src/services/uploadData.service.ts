@@ -33,8 +33,8 @@ export async function processAndInsertExcelData(buffer: Buffer): Promise<void> {
 
       // Check if dateinsert is a string
       if (typeof row.dateinsert === 'string') {
-        // Parse the date from the string format 'MM/DD/YYYY'
-        const [month, day, year] = row.dateinsert.split('/').map(Number);
+        // Parse the date from the string format 'dd/MM/YYYY'
+        const [day, month, year] = row.dateinsert.split('/').map(Number);
         date = new Date(year, month - 1, day); // Create a Date object (months are 0-indexed)
       } else if (typeof row.dateinsert === 'number') {
         // Convert Excel date number to JavaScript Date object
@@ -45,7 +45,6 @@ export async function processAndInsertExcelData(buffer: Buffer): Promise<void> {
       } else {
         throw new Error(`Unexpected date format: ${row.dateinsert}`);
       }
-
       await MutationData.create({
         dateinsert: date, // Insert the Date object directly
         description: row.description,
