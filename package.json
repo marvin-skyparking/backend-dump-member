@@ -6,9 +6,9 @@
   "scripts": {
     "test": "npx jest --passWithNoTests",
     "lint": "npx eslint . --fix",
-    "lint:build": "npx eslint . --fix && yarn build ",
+    "lint:build": "npx eslint . --fix && yarn build",
     "prepare": "husky",
-    "build": "tsc && cp -r src/uploads dist/ && yarn copy-static-files",
+    "build": "tsc && yarn copy-static-files",
     "start": "yarn build && node dist/server.js",
     "dev": "yarn prettier:format && ts-node-dev --respawn --transpile-only src/server.ts",
     "migration:generate": "sequelize-cli migration:generate",
@@ -17,10 +17,12 @@
     "migration:undo": "sequelize-cli db:migrate:undo",
     "migration:undo:all": "sequelize-cli db:migrate:undo:all",
     "prettier:format": "prettier --config .prettierrc src/**/*.ts --write",
-    "seed": "sequelize-cli db:seed: ll",
+    "seed": "sequelize-cli db:seed:all",
     "seed:undo": "sequelize-cli db:seed:undo",
-    "copy-static-files": "copyfiles -u 1 ./src/uploads/**/*"
-  },
+    "copy-static-files": "yarn copy-files && yarn copy-directories",
+    "copy-files": "copyfiles -u 1 './src/uploads/**/*.*' './dist/uploads/'",
+    "copy-directories": "copyfiles -u 1 './src/uploads/**/' './dist/uploads/'"
+},
   "lint-staged": {
     "*.ts": "eslint --fix"
   },
