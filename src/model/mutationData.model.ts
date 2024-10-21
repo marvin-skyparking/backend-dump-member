@@ -6,6 +6,7 @@ interface MutationDataAttributes {
   description?: string;
   dateinsert?: Date;
   nominal?: number;
+  isConfirmed?: Boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +22,7 @@ class MutationData
   public description?: string;
   public dateinsert?: Date;
   public nominal?: number;
+  public isConfirmed?: Boolean;
   public createdAt!: Date;
   public updatedAt!: Date;
 }
@@ -44,6 +46,11 @@ MutationData.init(
     nominal: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    isConfirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
     },
     createdAt: {
       type: DataTypes.DATE,

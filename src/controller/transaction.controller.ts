@@ -30,7 +30,8 @@ import MasterLocation from '../model/masterLocation.model';
 import ExcelJS from 'exceljs';
 import {
   getPaginatedResults,
-  processAndInsertExcelData
+  processAndInsertExcelData,
+  updateIsConfirmed
 } from '../services/uploadData.service';
 import { getMasterLocationByCode } from '../services/location.service';
 import Transaction, {
@@ -949,5 +950,32 @@ export async function sendFailureImage(req: Request, res: Response) {
     }
   } catch (error: any) {
     return ServerError(req, res, error?.message, error);
+  }
+}
+
+export async function updateMutationDataIsConfirmed(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const { id } = req.params; // Get the ID from the request parameters
+    const isConfirmed = true; // Get the isConfirmed from the request body
+
+    if (typeof isConfirmed !== 'boolean') {
+      return res.status(400).json({ message: 'isConfirmed must be a boolean' });
+    }
+
+    // Use the service to update the isConfirmed field
+    const updatedMutationData = await updateIsConfirmed(
+      Number(id),
+      isConfirmed
+    );
+
+    return res.status(200).json(updatedMutationData);
+  } catch (error) {
+    console.error('Error in updateMutationDataIsConfirmed controller:', error);
+    return res.status(500).json({
+      message: error instanceof Error ? error.message : 'Internal server error'
+    });
   }
 }
