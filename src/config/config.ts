@@ -2,10 +2,10 @@ import { SequelizeOptions } from 'sequelize-typescript';
 
 const config: { [key: string]: SequelizeOptions } = {
   development: {
-    username: 'unikas',
-    password: '5ky50p4y123!.',
-    database: 'skybillingdb',
-    host: '147.139.137.204',
+    username: 'root',
+    password: '50p4y5ky0v0!',
+    database: 'db_skyccc',
+    host: '8.215.44.147',
     dialect: 'mysql',
     models: [__dirname + '/../models']
   },

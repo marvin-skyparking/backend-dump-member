@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import { addMonths, startOfMonth, endOfMonth, setDate } from 'date-fns';
 
 export function generateRandomNumber(length: number): string {
   const digits = '0123456789';
@@ -108,4 +109,36 @@ export function generateRandomNoRef(): string {
 
   existingRefs.add(noRef); // Store the newly generated NoRef
   return noRef;
+}
+
+export function calculateTGLAKHIR(namaProduk: string) {
+  let monthsToAdd = 0;
+
+  switch (namaProduk) {
+    case '1 Bulan':
+      monthsToAdd = 1;
+      break;
+    case '4 Bulan':
+      monthsToAdd = 3;
+      break;
+    case '8 Bulan':
+      monthsToAdd = 7;
+      break;
+    case '12 Bulan':
+      monthsToAdd = 11;
+      break;
+    default:
+      throw new Error('Invalid product duration');
+  }
+
+  // Start from the beginning of the next month
+  const startNextMonth = startOfMonth(addMonths(new Date(), 1));
+
+  // Add the required months for the product duration
+  const futureDate = addMonths(startNextMonth, monthsToAdd - 1); // -1 because the first month is already included
+
+  // Set the end date to the last day of that future month
+  const TGLAKHIR = endOfMonth(futureDate);
+
+  return TGLAKHIR;
 }

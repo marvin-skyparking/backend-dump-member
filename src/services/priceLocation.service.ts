@@ -4,6 +4,7 @@ import MasterLocation from '../model/masterLocation.model';
 // Create a new location price
 export async function createLocationPrice(data: {
   locationId: number; // Foreign key referencing MasterLocation
+  namaProduk: string;
   priceMotor: number;
   priceMobil: number;
 }) {

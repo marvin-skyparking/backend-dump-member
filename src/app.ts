@@ -20,7 +20,10 @@ app.set('trust proxy', 1);
 
 //Otigin
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://inject.skyparking.online'], // Replace with your specific allowed origins
+  origin: [
+    'http://localhost:3000',
+    'https://dev-injectmember.skyparking.online'
+  ], //  'https://inject.skyparking.online'],  Replace with your specific allowed origins
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   credentials: true // Enable this if you need to allow cookies or authentication headers

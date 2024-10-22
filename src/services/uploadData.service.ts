@@ -67,12 +67,16 @@ export async function getPaginatedResults(
 
   const queryOptions: any = {
     offset: skip,
-    limit: take
+    limit: take,
+    where: {
+      isConfirmed: false // Only show records where isConfirmed is false
+    }
   };
 
   // Add search filters if applicable
   if (search) {
     queryOptions.where = {
+      ...queryOptions.where, // Keep the existing isConfirmed condition
       description: {
         [Op.like]: `%${search}%` // Search in the description field
       }
@@ -89,4 +93,29 @@ export async function getPaginatedResults(
     data: results.rows, // The actual data fetched
     totalPages
   };
+}
+
+export async function updateIsConfirmed(
+  id: number,
+  isConfirmed: boolean
+): Promise<MutationData> {
+  try {
+    // Find the mutationData record by id
+    const mutationData = await MutationData.findByPk(id);
+    if (!mutationData) {
+      throw new Error('Mutation Data not found');
+    }
+
+    // Update the isConfirmed field
+    await mutationData.update({ isConfirmed });
+
+    return mutationData;
+  } catch (error) {
+    console.error('Error updating isConfirmed field:', error);
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to update isConfirmed field'
+    );
+  }
 }
