@@ -1,11 +1,12 @@
 import { SequelizeOptions } from 'sequelize-typescript';
+import EnvConfig from './envConfig';
 
 const config: { [key: string]: SequelizeOptions } = {
   development: {
-    username: 'unikas',
-    password: '5ky50p4y123!.',
-    database: 'skybillingdb',
-    host: '147.139.137.204',
+    username: EnvConfig.USERNAME_DB_PROD,
+    password: EnvConfig.PASSWORD_DB_PROD,
+    database: EnvConfig.DB_PROD,
+    host: EnvConfig.DB_HOST,
     dialect: 'mysql',
     models: [__dirname + '/../models']
   },
@@ -18,10 +19,10 @@ const config: { [key: string]: SequelizeOptions } = {
     models: [__dirname + '/../models']
   },
   production: {
-    username: 'root',
-    password: '50p4y5ky0v0!',
-    database: 'db_skyccc',
-    host: '8.215.44.147',
+    username: EnvConfig.USERNAME_DB_PROD,
+    password: EnvConfig.PASSWORD_DB_PROD,
+    database: EnvConfig.DB_PROD,
+    host: EnvConfig.DB_HOST,
     dialect: 'mysql',
     models: [__dirname + '/../models']
   }
