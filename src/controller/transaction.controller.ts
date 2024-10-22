@@ -18,7 +18,11 @@ import {
 } from '../utils/response/common.response';
 import dumpDataMember from '../model/dumpData.model';
 import { insertDumpData, markAsExported } from '../services/dumpData.service';
-import { generateRandomNoRef, getCodeProduct } from '../utils/helper.utils';
+import {
+  calculateTGLAKHIR,
+  generateRandomNoRef,
+  getCodeProduct
+} from '../utils/helper.utils';
 import { decryptData, encryptData } from '../utils/encrypt.utils';
 import { deleteFile } from '../utils/file.utils';
 import { markTransactionAsPaid } from '../services/transaction.service';
@@ -26,7 +30,8 @@ import MasterLocation from '../model/masterLocation.model';
 import ExcelJS from 'exceljs';
 import {
   getPaginatedResults,
-  processAndInsertExcelData
+  processAndInsertExcelData,
+  updateIsConfirmed
 } from '../services/uploadData.service';
 import { getMasterLocationByCode } from '../services/location.service';
 import Transaction, {
@@ -71,6 +76,7 @@ export async function createTransaction(
       phonenumber,
       membershipStatus,
       email,
+      namaProduk,
       vehicletype,
       NoCard,
       PlateNumber,
@@ -122,6 +128,7 @@ export async function createTransaction(
       phonenumber,
       membershipStatus,
       email,
+      namaProduk,
       vehicletype,
       NoCard,
       PlateNumber,
@@ -139,6 +146,13 @@ export async function createTransaction(
       noRek,
       namaRek
     };
+
+    // Calculate TGLAKHIR
+    const TGLAKHIR = calculateTGLAKHIR(namaProduk);
+
+    if (transactionData.namaProduk == '') {
+      return BadRequest(res, 'Tolong Isi Nama Produk');
+    }
 
     // Quota check
     const location = await getMasterLocationByCode(locationCode);
@@ -226,10 +240,6 @@ export async function createTransaction(
       location.QuotaMotorRemaining -= 1;
     }
     await location.save();
-
-    // Calculate TGLAKHIR
-    const nextMonthForTGLAKHIR = addMonths(new Date(), 1);
-    const TGLAKHIR = setDate(startOfMonth(nextMonthForTGLAKHIR), 5);
 
     // Insert dump data
     const dumpMember = {
@@ -908,5 +918,64 @@ export async function getTransactionsByStatus(
   } catch (error: any) {
     // Return server error if something goes wrong
     return ServerError(req, res, error?.message, error);
+  }
+}
+
+export async function sendFailureImage(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { pesan } = req.body;
+    const data = await TransactionService.getTransactionByIds(id);
+
+    if (!data) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+    try {
+      const fonteAPI =
+        EnvConfig.FONTE_ENDPOINT +
+        '?token=' +
+        EnvConfig.FONTE_TOKEN +
+        '&target=' +
+        data.phonenumber +
+        '&message=' +
+        `Hi ${data.fullname}, dengan plat nomor ${data.PlateNumber} dan mohon diubah foto ${pesan} anda salah`;
+      const response = await axios.get(fonteAPI);
+      if (!response) {
+        return BadRequest(res, 'failed send message');
+      }
+      console.log('API response:', response.data);
+      return OK(res, 'Message sent successfully');
+    } catch (error: any) {
+      return ServerError(req, res, error?.message, error);
+    }
+  } catch (error: any) {
+    return ServerError(req, res, error?.message, error);
+  }
+}
+
+export async function updateMutationDataIsConfirmed(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const { id } = req.params; // Get the ID from the request parameters
+    const isConfirmed = true; // Get the isConfirmed from the request body
+
+    if (typeof isConfirmed !== 'boolean') {
+      return res.status(400).json({ message: 'isConfirmed must be a boolean' });
+    }
+
+    // Use the service to update the isConfirmed field
+    const updatedMutationData = await updateIsConfirmed(
+      Number(id),
+      isConfirmed
+    );
+
+    return res.status(200).json(updatedMutationData);
+  } catch (error) {
+    console.error('Error in updateMutationDataIsConfirmed controller:', error);
+    return res.status(500).json({
+      message: error instanceof Error ? error.message : 'Internal server error'
+    });
   }
 }

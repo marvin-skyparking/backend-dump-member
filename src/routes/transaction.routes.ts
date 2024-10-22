@@ -67,4 +67,14 @@ Transactionrouter.get(
   TransactionController.getTransactionsByStatus
 );
 
+Transactionrouter.post(
+  '/sendFailureImage/:id',
+  TransactionController.sendFailureImage
+);
+
+Transactionrouter.post(
+  '/udpateConfirmation/:id',
+  TransactionController.updateMutationDataIsConfirmed
+);
+
 export default Transactionrouter;

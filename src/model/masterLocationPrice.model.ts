@@ -4,6 +4,7 @@ import MasterLocation from './masterLocation.model'; // Ensure this import is co
 
 interface MasterLocationPriceAttributes {
   id: number; // Primary key for MasterLocationPrice
+  namaProduk: string;
   locationId: number; // Foreign key referencing MasterLocation
   priceMotor: number; // Price for motor vehicles
   priceMobil: number; // Price for mobil vehicles
@@ -19,6 +20,7 @@ class MasterLocationPrice extends Model<
   MasterLocationPriceCreationAttributes
 > {
   public id!: number; // Primary key
+  public namaProduk!: string;
   public locationId!: number; // Foreign key to MasterLocation
   public priceMotor!: number; // Price for motor vehicles
   public priceMobil!: number; // Price for mobil vehicles
@@ -31,6 +33,10 @@ class MasterLocationPrice extends Model<
           type: DataTypes.INTEGER,
           autoIncrement: true,
           primaryKey: true // Set id as the primary key
+        },
+        namaProduk: {
+          type: DataTypes.STRING,
+          allowNull: false
         },
         locationId: {
           type: DataTypes.INTEGER,
