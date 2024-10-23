@@ -40,6 +40,7 @@ import Transaction, {
 } from '../model/dataTransaksi.model';
 import EnvConfig from '../config/envConfig';
 import { insertActivityLog } from '../services/activityLog.service';
+import { createTransactionHistory } from '../services/transactionHistory.service';
 const { format } = require('date-fns');
 // Define type for the file fields
 export async function createTransaction(
@@ -232,6 +233,8 @@ export async function createTransaction(
         'Transaction could not be created or updated.'
       );
     }
+
+    const insert_history = await createTransactionHistory(transactionData);
 
     // Update location quota
     if (vehicletype === 'MOBIL') {
