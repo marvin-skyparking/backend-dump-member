@@ -299,7 +299,8 @@ export async function getAllTransactions(
       page: parseInt(req.query.page as string, 10) || 1,
       limit: parseInt(req.query.limit as string, 10) || 10,
       search: (req.query.search as string) || '',
-      isDropdown: req.query.isDropdown === 'true'
+      isDropdown: req.query.isDropdown === 'true',
+      sort: (req.query.sort as string)?.toLowerCase() === 'asc' ? 'asc' : 'desc' // Default to 'desc' if not 'asc'
     };
 
     // Call the service to get transactions
@@ -321,6 +322,7 @@ export async function getAllTransactions(
     return ServerError(req, res, error?.message, error);
   }
 }
+
 // Get a transaction by ID
 export async function getTransactionById(
   req: Request,

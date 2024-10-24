@@ -25,3 +25,10 @@ config.json
 config.ts
 envConfig.ts
 database.ts
+
+
+# Docker files
+docker-compose.override.yml
+docker-compose.debug.yml
+.dockerignore
+docker-compose.yml

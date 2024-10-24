@@ -5,7 +5,7 @@ import Transaction, {
   TransactionAttributes,
   TransactionCreationAttributes
 } from '../model/dataTransaksi.model';
-import { Op } from 'sequelize';
+import { Op, fn, col, where, literal } from 'sequelize';
 import dumpDataMember from '../model/dumpData.model';
 import sequelize from '../config/database';
 
@@ -29,7 +29,7 @@ export async function getAllTransactions(
   payload: IPaginatePayload = {}
 ): Promise<{ rows: Transaction[]; count: number }> {
   try {
-    const { page = 1, limit = 10, search = '' } = payload;
+    const { page = 1, limit = 10, search = '', sort = 'desc' } = payload;
 
     // Calculate offset for pagination
     const offset = (page - 1) * limit;
@@ -47,29 +47,56 @@ export async function getAllTransactions(
       'NoRef'
     ];
 
-    // Build search condition using LIKE instead of ILIKE
+    // Build search condition with 'LIKE' and 'updatedAt' logic
     const searchCondition = search
       ? {
-          [Op.or]: searchFields.map((field) => ({
-            [field]: { [Op.like]: `%${search}%` }
-          }))
+          [Op.and]: [
+            // Exclude 'ismember' if 'updatedAt' is before the 20th of the month
+            {
+              [Op.or]: [
+                { membershipStatus: { [Op.ne]: 'ismember' } },
+                {
+                  membershipStatus: 'ismember',
+                  updatedAt: {
+                    [Op.gte]: fn(
+                      'DATE_SUB',
+                      fn('NOW'),
+                      literal('INTERVAL DAYOFMONTH(updatedAt) - 20 DAY')
+                    )
+                  }
+                }
+              ]
+            },
+            {
+              [Op.or]: searchFields.map((field) => ({
+                [field]: { [Op.like]: `%${search}%` }
+              }))
+            }
+          ]
         }
-      : {};
+      : {
+          [Op.or]: [
+            { membershipStatus: { [Op.ne]: 'ismember' } },
+            {
+              membershipStatus: 'ismember',
+              updatedAt: {
+                [Op.gte]: fn(
+                  'DATE_SUB',
+                  fn('NOW'),
+                  literal('INTERVAL DAYOFMONTH(updatedAt) - 20 DAY')
+                )
+              }
+            }
+          ]
+        }; // Handle cases without search
 
-    // Fetch transactions with pagination and search
+    // Fetch transactions with pagination, search, and sorting by 'createdAt' or 'updatedAt'
     const { count, rows } = await Transaction.findAndCountAll({
       where: searchCondition,
       limit,
       offset,
       order: [
-        [
-          sequelize.fn(
-            'GREATEST',
-            sequelize.col('createdAt'),
-            sequelize.col('updatedAt')
-          ),
-          'ASC'
-        ]
+        [fn('GREATEST', col('createdAt'), col('updatedAt')), sort.toUpperCase()] // Apply dynamic sort (asc or desc)
       ]
     });
 
@@ -79,7 +106,6 @@ export async function getAllTransactions(
     throw new Error(`Failed to fetch transactions: ${error.message}`);
   }
 }
-
 // Get a transaction by ID
 export async function getTransactionByIds(
   id: number
@@ -443,7 +469,8 @@ export async function updateStatusProgress(
 export async function getTransactionsByStatus(
   status: StatusProgress,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  sort: string = 'desc' // Default to 'desc' if not provided
 ): Promise<{ transactions: Transaction[]; totalCount: number }> {
   try {
     // Ensure status is valid before querying
@@ -454,7 +481,7 @@ export async function getTransactionsByStatus(
     // Calculate the offset for pagination
     const offset = (page - 1) * limit;
 
-    // Find transactions by exact status with pagination
+    // Find transactions by exact status with pagination and sorting
     const { rows: transactions, count: totalCount } =
       await Transaction.findAndCountAll({
         where: {
@@ -464,7 +491,7 @@ export async function getTransactionsByStatus(
         },
         offset: offset,
         limit: limit,
-        order: [['createdAt', 'ASC']] // Optional: Order by creation date
+        order: [['createdAt', sort.toUpperCase()]] // Apply dynamic sorting based on 'asc' or 'desc'
       });
 
     // Return the transactions along with total count for pagination
