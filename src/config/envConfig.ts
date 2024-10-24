@@ -12,24 +12,24 @@ const EnvConfig: IEnvInterface = ENV;
 //   EnvConfig.APP_CORES = 1;
 // }
 
-if (EnvConfig.NODE_ENV == 'production') {
-  EnvConfig.APP_URL = EnvConfig.APP_URL;
-  EnvConfig.DB_PROD = EnvConfig.DB_PROD ;
-  EnvConfig.ENABLE_SWAGGER = EnvConfig.ENABLE_SWAGGER;
-  EnvConfig.PORT = EnvConfig.PORT;
-  EnvConfig.USERNAME_DB_PROD = EnvConfig.USERNAME_DB_PROD;
-  EnvConfig.PASSWORD_DB_PROD = EnvConfig.PASSWORD_DB_PROD;
+if (EnvConfig.NODE_ENV == 'development') {
+  EnvConfig.APP_URL = EnvConfig.APP_URL ?? 'http://localhost:9000';
+  EnvConfig.DB_DEV = EnvConfig.DB_DEV ?? 'db_skyccc';
+  EnvConfig.ENABLE_SWAGGER = EnvConfig.ENABLE_SWAGGER ?? true;
+  EnvConfig.PORT = EnvConfig.PORT ?? 9000;
+  EnvConfig.USERNAME_DB_DEV = EnvConfig.USERNAME_DB_DEV ?? 'root';
+  EnvConfig.PASSWORD_DB_DEV = EnvConfig.PASSWORD_DB_DEV ?? '50p4y5ky0v0!';
   EnvConfig.SENTRY_URI = EnvConfig.SENTRY_URI ?? '';
   EnvConfig.SENTRY_ENABLE = EnvConfig.SENTRY_ENABLE ?? false;
   EnvConfig.JWT_SECRET = EnvConfig.JWT_SECRET ?? 'skyparking';
   EnvConfig.BAYARIND_DEV_URL =
-  EnvConfig.BAYARIND_DEV_URL ?? 'https://snaptest.bayarind.id';
+    EnvConfig.BAYARIND_DEV_URL ?? 'https://snaptest.bayarind.id';
   EnvConfig.WMS_F = EnvConfig.WMS_F ?? 1;
   EnvConfig.MAX_F = EnvConfig.MAX_F ?? 5;
   EnvConfig.WMS_S = EnvConfig.WMS_S ?? 1;
   EnvConfig.MAX_S = EnvConfig.MAX_S ?? 5;
   EnvConfig.FONTE_ENDPOINT =
-  EnvConfig.FONTE_ENDPOINT ?? 'https://api.fonnte.com/send';
+    EnvConfig.FONTE_ENDPOINT ?? 'https://api.fonnte.com/send';
   EnvConfig.FONTE_TOKEN = EnvConfig.FONTE_TOKEN ?? 'FrkqWjdXi31Wph2UbdMh';
 }
 export default EnvConfig;

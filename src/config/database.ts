@@ -2,9 +2,9 @@ import { Sequelize } from 'sequelize';
 import EnvConfig from './envConfig';
 
 const sequelize = new Sequelize(
-  EnvConfig.DB_PROD,
-  EnvConfig.USERNAME_DB_PROD,
-  EnvConfig.PASSWORD_DB_PROD,
+  EnvConfig.DB_DEV,
+  EnvConfig.USERNAME_DB_DEV,
+  EnvConfig.PASSWORD_DB_DEV,
   {
     host: EnvConfig.DB_HOST,
     dialect: 'mariadb',
