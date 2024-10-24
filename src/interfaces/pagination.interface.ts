@@ -13,6 +13,7 @@ export interface IPaginatePayload {
   limit?: number;
   search?: string | any;
   isDropdown?: string | boolean | any;
+  sort?: string;
 }
 
 export interface IPaginateResult {
